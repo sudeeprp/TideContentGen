@@ -2,6 +2,7 @@ import os
 import shutil
 import ActivityHTMLPieces
 import pandas as pd
+from urllib.parse import quote
 
 common_files = ['imgbackground-sheet0.png', 'bell-sheet0.png', 'img_speakerbtn-sheet0.png', 'tap_learn_instruction.ogg']
 
@@ -9,8 +10,12 @@ def copy_common_resources(source_dir, destination_dir):
     for file in common_files:
         shutil.copy(source_dir + '/' + file, destination_dir + '/' + file)
 
+def file2id(filename, id_extension = ''):
+    return filename.replace(' ', '_') + id_extension
+
 def image_html_line(imagefile, class_name, attrs = ''):
-    return '<img id=' + imagefile + '.pic class="' + class_name + '" ' + attrs + ' src="' + imagefile + '" alt="' + imagefile + '">\n'
+    return '<img id=' + file2id(imagefile, '.pic') + ' class="' + class_name + '" ' + attrs + \
+           ' src="' + quote(imagefile) + '" alt="' + imagefile + '">\n'
 
 class ActivityWriter:
     def __init__(self):
@@ -31,9 +36,9 @@ class ActivityWriter:
         html_file.write('<table class="content">\n')
 
     def write_instructions(self, html_file, instruction_pic, instruction_sound):
-        html_file.write('<audio id=' + instruction_sound + '> <source src="' + instruction_sound +\
+        html_file.write('<audio id=' + file2id(instruction_sound) + '> <source src="' + quote(instruction_sound) +\
                         '" type="audio/ogg"></audio>\n')
-        html_file.write('<a onclick="document.getElementById(\'' + instruction_sound + '\').play();">\n')
+        html_file.write('<a onclick="document.getElementById(\'' + file2id(instruction_sound) + '\').play();">\n')
         html_file.write(image_html_line(instruction_pic, 'instruction'))
         html_file.write('</a>\n')
 
@@ -42,8 +47,9 @@ class ActivityWriter:
         play_instruction = ''
         audio = self.picmap.get('Sound').get(imagename)
         if audio is not None:
-            audio_source = '<audio id=' + audio + '> <source src="' + audio + '" type="audio/ogg"></audio>\n'
-            play_instruction = 'document.getElementById(\'' + audio + '\').play();'
+            audio_source = '<audio id=' + file2id(audio) + '> <source src="' + quote(audio) + \
+                           '" type="audio/ogg"></audio>\n'
+            play_instruction = 'document.getElementById(\'' + file2id(audio) + '\').play();'
             shutil.copy(audio, self.activity_dir + '/' + audio)
         return audio_source, play_instruction
 
