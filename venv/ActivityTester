@@ -1,0 +1,33 @@
+import ActivityWriter
+import shutil
+
+milestone = \
+{'milestone name': 'Basic words',
+ 'cmd': 3,
+ 'activities': [{'activity name': 'M_CP1_MS1_Tab_1.1a',
+                 'logo': 'tab.png',
+                 'instruction.sound': 'tap_learn_instruction.ogg',
+                 'images.layout':
+                     [[{'image': 'girlsface-sheet0.png'}, {'image': 'bubble-sheet0.png',
+                                                           'attrs': ['style="max-width: 70%; max-height: 70%"',
+                                                                    'align="left"']},
+                       {'image': 'boy_sface-sheet0.png'}],
+                      [{'image': '|'},
+                       {'image': 'bubble-sheet1.png', 'attrs': ['style="max-width: 70%; max-height: 70%"']},
+                       {'image': '|'}],
+                      [{'image': '|'},
+                       {'image': 'bubble-sheet0.png', 'attrs': ['style="max-width: 70%; max-height: 70%"']},
+                       {'image': '|'}],
+                      [{'image': '|'},
+                       {'image': 'bubble-sheet1.png', 'attrs': ['style="max-width: 70%; max-height: 70%"']},
+                       {'image': '|'}]]
+                 }]
+}
+
+def tap_learn_test():
+    activity = milestone['activities'][0]
+    shutil.rmtree(activity['activity name'], ignore_errors=True)
+    activity_writer = ActivityWriter.ActivityWriter()
+    activity_writer.write_tap_listen(activity['activity name'], activity)
+
+tap_learn_test()
