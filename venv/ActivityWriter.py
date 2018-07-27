@@ -8,7 +8,7 @@ common_files = ['imgbackground-sheet0.png', 'bell-sheet0.png', 'img_speakerbtn-s
 
 def copy_common_resources(source_dir, destination_dir):
     for file in common_files:
-        shutil.copy(source_dir + '/' + file, destination_dir + '/' + file)
+        shutil.copy(os.path.join(source_dir, file), os.path.join(destination_dir, file))
 
 def file2id(filename, id_extension = ''):
     return filename.replace(' ', '_') + id_extension
@@ -26,7 +26,7 @@ class ActivityWriter:
         self.activity_dir = activity_dir
         os.makedirs(self.activity_dir, exist_ok=True)
         copy_common_resources('.', self.activity_dir)
-        html_file = open(self.activity_dir + '/index.html', "w")
+        html_file = open(os.path.join(self.activity_dir, 'index.html'), "w")
         return html_file
 
     def write_content_start(self, html_file, layout):
@@ -123,5 +123,3 @@ class ActivityWriter:
         self.write_content_rows(html_file, layout['images.layout'])
         self.write_content_end(html_file)
         self.close_html(html_file)
-        shutil.copy(layout['logo'], activity_dir + '/' + layout['logo'])
-

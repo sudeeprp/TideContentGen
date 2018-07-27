@@ -9,6 +9,9 @@ begin_head = '''\
 html {
 height: 100%;
 }
+table { border: none; border-collapse: collapse; }
+table td { border-left: 1px solid #000; }
+table td:first-child { border-left: none; }
 .nomargins {
     margin-top: 0px;
     margin-left: 0px;
@@ -42,6 +45,11 @@ height: 100%;
 }
 .grid_table {
     width: 100vw;
+    text-align: center;
+    width: 80%;
+    table-layout: fixed;
+    background: url("pencil.png") no-repeat;
+    background-size: 100% 100%;
 }
 .milestone_head {
     margin-top: 3px;
@@ -60,14 +68,31 @@ figure {
 }
 figure img {
     vertical-align: top;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-height: 64px;
+    max-width: 64px;
 }
 figure figcaption {
     text-align: center;
     font-family: Verdana;
+    font-size: small;
 }
 </style>
 '''
-
+body_start = '''\
+<body>
+<table style="height: 100vh; width: 100vw; vertical-align:center">
+<tr>
+<td>
+'''
+body_end = '''\
+</td>
+</tr>
+</table>
+</body>
+'''
 tail = '''\
 </html>
 '''

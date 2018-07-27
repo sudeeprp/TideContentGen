@@ -9,8 +9,8 @@ import time
 import errno
 
 
-def make_clean_content_folder(excel_filename):
-    content_folder_name = Path(sys.argv[1]).resolve().stem
+def make_clean_content_folder(output_dir, excel_filename):
+    content_folder_name = os.path.join(output_dir, Path(excel_filename).resolve().stem)
     if os.path.isdir(content_folder_name):
         shutil.rmtree(content_folder_name)
     print('Look in ' + content_folder_name)
@@ -28,24 +28,19 @@ def make_clean_content_folder(excel_filename):
 
 
 def make_activity_in_content_folder(content_folder_name, activity):
-    if activity['type'].startswith('take'):
-        shutil.copytree(activity['activity id'], content_folder_name + '/' + activity['activity id'])
-        shutil.copyfile(activity['logo'], content_folder_name + '/' + activity['activity id'] + '/' + activity['logo'])
-    else:
-        activity_writer = ActivityWriter.ActivityWriter()
-        activity_writer.write_tap_listen(content_folder_name + '/' + activity['activity id'], activity)
+    activity_writer = ActivityWriter.ActivityWriter()
+    activity_writer.write_tap_listen(os.path.join(content_folder_name, activity['Activity Identifier']), activity)
 
 
-def parse_excel_and_make_content(excel_filename):
-    milestones = ExcelParser.forge_milestones(excel_filename)
-    content_folder_name = make_clean_content_folder(sys.argv[1])
-    for milestone in milestones:
-        for activity in milestone['activities']:
-            make_activity_in_content_folder(content_folder_name, activity)
-    GridWriter.forge_grid(milestones, content_folder_name)
+def parse_excel_and_make_activities(excel_filename, output_dir):
+    activities = ExcelParser.forge_activities(excel_filename)
+
+    content_folder_name = make_clean_content_folder(output_dir, excel_filename)
+    for activity in activities:
+        make_activity_in_content_folder(content_folder_name, activity)
 
 
-if len(sys.argv) < 2:
-    print("Usage: " + sys.argv[0] + " excel-file\n")
+if len(sys.argv) == 3:
+    parse_excel_and_make_activities(excel_filename=sys.argv[1], output_dir=sys.argv[2])
 else:
-    parse_excel_and_make_content(sys.argv[1])
+    print("Activity creator\nUsage: " + sys.argv[0] + " <excel filename> <output dir>\n")
