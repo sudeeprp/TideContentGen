@@ -35,21 +35,41 @@ def scan_row_range(ws, col_name, excel_col_map, start_row, limit_row):
     return name, row_range
 
 
+def collect_screen(ws, excel_col_map, screen_rows):
+    screen = []
+    for row_number in range(screen_rows['start'], screen_rows['end']+1):
+        row_layout = []
+        for column in ['images col1', 'images col2', 'images col3']:
+            cell_value = ws[excel_col_map[column] + str(row_number)]
+            if cell_value is None:
+                row_layout.append(None)
+            else:
+                cell_value = cell_value.strip()
+                if cell_value.lower().endswith('.png') or cell_value.lower().endswith('.jpg') or \
+                                           cell_value.lower().endswith('.jpeg'):
+                    row_layout.append({'image': cell_value})
+                elif cell_value.startswith('|'):
+                    row_layout.append({'merge_above': 1})
+                else:
+                    row_layout.append({'text': cell_value})
+            #if you want to specify style: add more columns and use re.findall(r'(\w+=".+?")
+        screen.append(row_layout)
+    return screen
+
+
 def collect_activity(ws, excel_col_map, activity_rows):
     activity = \
         {'Activity Identifier': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
-         'instruction.sound': ws[excel_col_map['instruction.sound'] + str(activity_rows['start'])],
+         'instruction.sound': ws[excel_col_map['instruction.sound'] + str(activity_rows['start'])].strip(),
          'images.layout': []}
-    image_range = ws.wsheet[excel_col_map['images col1'] + str(activity_rows['start']) +
-                     ':' + excel_col_map['images col3'] + str(activity_rows['end'])]
-    for image_row_cells in image_range:
-        image_row_layout = []
-        for image_cell in image_row_cells:
-            image_layout = {'image': image_cell.value}
-            if image_cell.comment is not None:
-                image_layout['attrs'] = re.findall(r'(\w+=".+?")', str(image_cell.comment))
-            image_row_layout.append(image_layout)
-        activity['images.layout'].append(image_row_layout)
+    current_row = activity_rows['start']
+    while current_row <= activity_rows['end']:
+        screen_number, screen_rows = scan_row_range(ws, 'Screen', excel_col_map, current_row, activity_rows['end'])
+        if screen_number is None:
+            screen_number = '1'
+        screen = collect_screen(ws, excel_col_map, screen_rows)
+        activity['images.layout'].append(screen)
+        current_row = screen_rows['end'] + 1
     return activity
 
 
@@ -123,3 +143,14 @@ def forge_grid(excel_file, milestone):
                 break
         current_row += 1
     return grid
+
+def pics_sounds_map(excel_file):
+    w = load_workbook(excel_file)
+    ws = Sheet(w[w.sheetnames[0]])
+    heading_row = 1
+    excel_col_map = map_headings(ws, heading_row)
+    pics_to_sounds = {}
+
+    for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
+        pics_to_sounds[ws[excel_col_map['Picture'] + str(current_row)]] = ws[excel_col_map['Sound'] + str(current_row)]
+    return pics_to_sounds

@@ -1,16 +1,14 @@
 import ActivityWriter
 import shutil
 
-activity = \
-    {
-        'Activity Identifier': 'Test activity',
-        'instruction.sound': 'tap_learn_instruction.ogg',
-        'images.layout': [[{'image': 'blue-sheet1.png'}, {'image': 'red-sheet2.png'}, {'image': 'yellow-sheet0.png'}], [{'image': 'ron-sheet1.png'}, {'image': 'sqa-sheet1.png'}, {'image': 'tran-sheet1.png'}]]
-    }
+activities = \
+[{'Activity Identifier': 'Greet Listen', 'instruction.sound': 'tap_learn_instruction.ogg', 'images.layout': [[[{'image': 'blue-sheet1.png'}, {'image': 'red-sheet2.png'}, {'image': 'yellow-sheet0.png'}], [{'image': 'ron-sheet1.png'}, {'image': 'sqa-sheet1.png'}, {'image': 'tran-sheet1.png'}]], [[{'image': 'blue-sheet1.png'}, {'image': 'red-sheet2.png'}, {'image': 'yellow-sheet0.png'}], [{'image': 'ron-sheet1.png'}, {'image': 'sqa-sheet1.png'}, {'image': 'tran-sheet1.png'}]]]}, {'Activity Identifier': 'See Greet', 'instruction.sound': 'tap_learn_instruction.ogg', 'images.layout': [[[{'image': 'girlsface-sheet0.png'}, None, {'image': 'boy_sface-sheet0.png'}]]]}, {'Activity Identifier': 'Talking ball', 'instruction.sound': 'tap_learn_instruction.ogg', 'images.layout': [[[None, {'image': 'cleaning-sheet0.png'}, None]]]}, {'Activity Identifier': 'Relatives', 'instruction.sound': 'tap_learn_instruction.ogg', 'images.layout': [[[{'image': 'poop.png'}, {'image': 'commode.png'}, None], [{'image': 'money.png'}, {'image': 'bank.png'}, None]]]}, {'Activity Identifier': 'Relatives Roles', 'instruction.sound': 'tap_learn_instruction.ogg', 'images.layout': [[[{'image': 'ron-sheet1.png'}, {'image': 'sqa-sheet1.png'}, {'image': 'tran-sheet1.png'}]]]}, {'Activity Identifier': 'Behaviors Intro', 'instruction.sound': 'tap_learn_instruction.ogg', 'images.layout': [[[{'image': 'girlsface-sheet0.png'}, {'image': 'hello1.png'}, {'image': 'boy_sface-sheet0.png'}], [{'merge_above': 1}, {'image': 'hello2.png'}, {'merge_above': 1}], [{'merge_above': 1}, {'image': 'hello3.png'}, {'merge_above': 1}], [{'merge_above': 1}, {'image': 'hello4.png'}, {'merge_above': 1}]]]}, {'Activity Identifier': 'behaviours in class 2', 'instruction.sound': 'tap_learn_instruction.ogg', 'images.layout': [[[None, {'image': 'mouth.png'}, None]], [[None, {'image': 'orangefruit-sheet0.png'}, None]], [[None, {'text': 'je'}, None], [None, {'text': 'name is'}, None], [None, {'text': 'Heloise'}, None], [None, {'image': 'girlsface-sheet0.png'}, None]], [[None, {'image': 'Outdoor game.png'}, None]]]}]
+
 
 def tap_learn_test():
-    shutil.rmtree(activity['Activity Identifier'], ignore_errors=True)
-    activity_writer = ActivityWriter.ActivityWriter()
-    activity_writer.write_tap_listen(activity['Activity Identifier'], activity)
+    for activity in activities:
+        shutil.rmtree(activity['Activity Identifier'], ignore_errors=True)
+        activity_writer = ActivityWriter.ActivityWriter()
+        activity_writer.write_tap_listen(activity['Activity Identifier'], activity)
 
 tap_learn_test()

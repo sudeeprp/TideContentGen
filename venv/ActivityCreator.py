@@ -27,20 +27,21 @@ def make_clean_content_folder(output_dir, excel_filename):
     return content_folder_name
 
 
-def make_activity_in_content_folder(content_folder_name, activity):
-    activity_writer = ActivityWriter.ActivityWriter()
+def make_activity_in_content_folder(content_folder_name, pics_to_sounds, activity):
+    activity_writer = ActivityWriter.ActivityWriter(pics_to_sounds)
     activity_writer.write_tap_listen(os.path.join(content_folder_name, activity['Activity Identifier']), activity)
 
 
-def parse_excel_and_make_activities(excel_filename, output_dir):
+def parse_excel_and_make_activities(excel_filename, pics_sounds_excel, output_dir):
     activities = ExcelParser.forge_activities(excel_filename)
+    pics_to_sounds = ExcelParser.pics_sounds_map(pics_sounds_excel)
 
     content_folder_name = make_clean_content_folder(output_dir, excel_filename)
     for activity in activities:
-        make_activity_in_content_folder(content_folder_name, activity)
+        make_activity_in_content_folder(content_folder_name, pics_to_sounds, activity)
 
 
-if len(sys.argv) == 3:
-    parse_excel_and_make_activities(excel_filename=sys.argv[1], output_dir=sys.argv[2])
+if len(sys.argv) == 4:
+    parse_excel_and_make_activities(excel_filename=sys.argv[1], pics_sounds_excel=sys.argv[2], output_dir=sys.argv[3])
 else:
-    print("Activity creator\nUsage: " + sys.argv[0] + " <excel filename> <output dir>\n")
+    print("Activity creator\nUsage: " + sys.argv[0] + " <excel filename> <pics and sounds excel> <output dir>\n")
