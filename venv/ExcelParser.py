@@ -9,9 +9,9 @@ class Sheet:
         return self.wsheet[item].value
 
 
-def map_headings(ws, heading_row=1):
+def map_headings(ws, heading_row=1, start_col = 'A'):
     excel_col_map = {}
-    cur_column = 'A'
+    cur_column = start_col
     head_row = str(heading_row)
     col_ord = ord(cur_column)
     while ws[cur_column+head_row] is not None and ws[cur_column+head_row] != "" and cur_column != 'Z':
@@ -107,32 +107,47 @@ def row_is_blank(ws, row_number):
     else:
         return False
 
+def dot_separate(sequence):
+    seq_str = ''
+    for i in sequence:
+        seq_str += str(i) + '.'
+    return seq_str[:-1]
+
+#Excel columns - these need to be the same in every milestone sheet!
+activity_sequence_col_head = '#'
+activity_logo_col_head = 'Logo'
+activity_numid_col_head = 'numid'
+head_row = 3
+start_col = 'B'
+
 def forge_grid(excel_file, milestone):
     print("Opening " + excel_file)
     w = load_workbook(excel_file)
     ws = Sheet(w[milestone])
-    heading_row = 2
     print("Mapping columns")
-    curriculum_col_map = map_headings(ws, heading_row=heading_row)
-    current_row = heading_row + 1
+    curriculum_col_map = map_headings(ws, heading_row=head_row, start_col=start_col)
+    current_row = head_row + 1
     grid = []
     blank_rows = 0
     while current_row <= ws.wsheet.max_row:
-        activity = ws[curriculum_col_map['Activity sequence'] + str(current_row)]
+        activity = ws[curriculum_col_map[activity_sequence_col_head] + str(current_row)]
         if activity is not None:
             sequence = re.findall(r'\d+', activity)
             if len(sequence) < 1:
                 sequence = [activity]
+            logo = ws[curriculum_col_map[activity_logo_col_head] + str(current_row)]
+            numid = ws[curriculum_col_map[activity_numid_col_head] + str(current_row)]
+            activity_id = logo + '_' + str(numid)
             activity_attributes = \
                 {'sequence': sequence,
-                 'Activity logo': ws[curriculum_col_map['Activity logo'] + str(current_row)],
-                 'Activity Identifier': ws[curriculum_col_map['Activity Identifier'] + str(current_row)],
-                 'Display name': ws[curriculum_col_map['Display name'] + str(current_row)],
-                 'Activity details': ws[curriculum_col_map['Activity details'] + str(current_row)]}
+                 'Activity logo': logo,
+                 'Activity Identifier': activity_id,
+                 'Display name': dot_separate(sequence)
+                }
             grid.append(activity_attributes)
-            print(ws[curriculum_col_map['Activity Identifier'] + str(current_row)])
+            print(activity_id)
             if not all_attributes_ok(activity_attributes):
-                print('Missing cells! Check merged-cells at ' + activity + ' (near row ' + str(current_row) + ')')
+                print('Missing cells at ' + activity_id + ' (near row ' + str(current_row) + ')')
                 break
         else:
             if row_is_blank(ws, current_row):
@@ -145,7 +160,7 @@ def forge_grid(excel_file, milestone):
     return grid
 
 def pics_sounds_map(excel_file):
-    w = load_workbook(excel_file)
+    w = load_workbook(excel_file, read_only=True, data_only=True)
     ws = Sheet(w[w.sheetnames[0]])
     heading_row = 1
     excel_col_map = map_headings(ws, heading_row)

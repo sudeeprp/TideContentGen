@@ -99,7 +99,7 @@ class ActivityWriter:
                     audio_source, play_instruction = self.audio_source_and_play_instruction(image_file)
                     html_file.write(audio_source)
                     html_file.write('<a onclick="' + play_instruction + 'mark_tap(\'' +image_file+ '.pic\');">\n')
-                    image_attr = 'style="max-height:' + str(60 // rows * rowspan) + 'vh;max-width:' + str(84 // cols) + 'vw;" '
+                    image_attr = 'style="max-height:' + str(90 // rows * rowspan) + 'vh;max-width:' + str(90 // cols) + 'vw;" '
                     html_file.write(image_html_line(image_file, 'picture', image_attr))
                     html_file.write('</a>')
                     shutil.copy(image_file, self.activity_dir + '/' + image_file)

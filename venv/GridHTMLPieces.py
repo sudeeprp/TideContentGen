@@ -44,9 +44,8 @@ table td:first-child { border-left: none; }
     box-shadow: 5px 5px 3px grey;
 }
 .grid_table {
-    width: 100vw;
     text-align: center;
-    width: 80%;
+    width: auto;
     table-layout: fixed;
     background: url("pencil.png") no-repeat;
     background-size: 100% 100%;

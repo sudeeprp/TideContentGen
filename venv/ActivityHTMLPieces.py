@@ -25,13 +25,13 @@ overflow: hidden;
     background-position: top, left, bottom, right; 
 }
 .content {
-    padding: 50px;
+    padding: 25px;
     width: 100%;
     height: 100vh;
     text-align: center;
 }
 .picture, .done_picture {
-    padding: 20px;
+    padding: 2px;
     border: 3px solid transparent;
 }
 .instruction {

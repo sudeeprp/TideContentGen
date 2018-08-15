@@ -33,19 +33,22 @@ def forge_grid(milestones, content_folder_name):
     html_file.write(GridHTMLPieces.tail)
     html_file.close()
 
+def sequence_break(current_sequence, next_sequence):
+    sequence_is_broken = True
+    if (len(current_sequence) > 2) and (len(next_sequence) > 2):
+        if (current_sequence[0] == next_sequence[0]) and (current_sequence[1] == next_sequence[1]):
+            sequence_is_broken = False
+    elif (current_sequence[0].lower().startswith('enrichment')) and \
+            (next_sequence[0].lower().startswith('remedial')):
+        sequence_is_broken= False
+    return sequence_is_broken
+
 def get_grid_column(grid, start_activity_index):
     current_activity_index = start_activity_index
     next_activity_index = current_activity_index + 1
     grid_column = [grid[current_activity_index]]
     while next_activity_index < len(grid):
-        next_activity_is_in_this_col = False
-        if (len(grid[current_activity_index]['sequence']) > 2) and \
-                (len(grid[next_activity_index]['sequence']) > 2):
-            next_activity_is_in_this_col = True
-        elif (grid[current_activity_index]['sequence'][0].lower().startswith('enrichment')) and \
-                (grid[next_activity_index]['sequence'][0].lower().startswith('remedials')):
-            next_activity_is_in_this_col = True
-        if next_activity_is_in_this_col:
+        if not sequence_break(grid[current_activity_index]['sequence'], grid[next_activity_index]['sequence']):
             grid_column.append(grid[next_activity_index])
             current_activity_index = next_activity_index
             next_activity_index = current_activity_index + 1
@@ -70,22 +73,23 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir):
     for column in grid_columns:
         for i in range(0, lcm_of_max_rows, lcm_of_max_rows//len(column)):
             filled_rows_in_lcm.append(i)
-    row = 0
+    #<<row = 0
     for table_row in range(lcm_of_max_rows):
         html_file.write('<tr>\n')
         if table_row in filled_rows_in_lcm:
             for activities in grid_columns:
                 row_span = lcm_of_max_rows//len(activities)
-                if table_row % row_span == 0 and row < len(activities):
+                if table_row % row_span == 0: #<<and row < len(activities):
+                    row = table_row // row_span
                     html_file.write('<td rowspan="' + str(row_span) + '">\n')
                     html_file.write('<a href="' +
                                     quote(activities[row]['Activity Identifier'] + '/' + 'index.html') + '">\n')
                     write_image_html(html_file, activities[row]['Activity logo'],
                                      activities[row]['Display name'], raw_material_dir)
                     html_file.write('</a></td>\n')
-            if row == 0:
-                html_file.write('<td rowspan="12" style="width:60px; border-left: none;"></td>')
-            row += 1
+            #<<if row == 0:
+            #<<    html_file.write('<td rowspan="12" style="width:60px; border-left: none;"></td>')
+            #<<row += 1
         html_file.write('</tr>\n')
     if max([len(activities) for activities in grid_columns]) > max_rows:
         print('WARNING: number of parallel activities exceeds ' + str(max_rows))
