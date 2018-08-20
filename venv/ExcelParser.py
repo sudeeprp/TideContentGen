@@ -107,12 +107,6 @@ def row_is_blank(ws, row_number):
     else:
         return False
 
-def dot_separate(sequence):
-    seq_str = ''
-    for i in sequence:
-        seq_str += str(i) + '.'
-    return seq_str[:-1]
-
 #Excel columns - these need to be the same in every milestone sheet!
 activity_sequence_col_head = '#'
 activity_logo_col_head = 'Logo'
@@ -120,17 +114,15 @@ activity_numid_col_head = 'numid'
 head_row = 3
 start_col = 'B'
 
-def forge_grid(excel_file, milestone):
-    print("Opening " + excel_file)
-    w = load_workbook(excel_file)
-    ws = Sheet(w[milestone])
-    print("Mapping columns")
+def forge_grid(worksheet):
+    ws = Sheet(worksheet)
     curriculum_col_map = map_headings(ws, heading_row=head_row, start_col=start_col)
     current_row = head_row + 1
     grid = []
     blank_rows = 0
     while current_row <= ws.wsheet.max_row:
         activity = ws[curriculum_col_map[activity_sequence_col_head] + str(current_row)]
+        is_mandatory = ws.wsheet[curriculum_col_map[activity_sequence_col_head] + str(current_row)].font.bold
         if activity is not None:
             sequence = re.findall(r'\d+', activity)
             if len(sequence) < 1:
@@ -142,10 +134,10 @@ def forge_grid(excel_file, milestone):
                 {'sequence': sequence,
                  'Activity logo': logo,
                  'Activity Identifier': activity_id,
-                 'Display name': dot_separate(sequence)
+                 'Display name': str(numid),
+                 'mandatory': is_mandatory
                 }
             grid.append(activity_attributes)
-            print(activity_id)
             if not all_attributes_ok(activity_attributes):
                 print('Missing cells at ' + activity_id + ' (near row ' + str(current_row) + ')')
                 break
