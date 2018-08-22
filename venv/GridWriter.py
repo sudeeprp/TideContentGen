@@ -40,13 +40,19 @@ def forge_grid(milestones, content_folder_name):
     html_file.write(GridHTMLPieces.tail)
     html_file.close()
 
+def is_enrichment_remedial_pair(current_sequence, next_sequence):
+    return ((current_sequence[0].lower().startswith('enrichment')) and
+            (next_sequence[0].lower().startswith('remedial'))) \
+            or \
+            ((current_sequence[0].lower().startswith('remedial')) and
+             (next_sequence[0].lower().startswith('enrichment')))
+
 def sequence_break(current_sequence, next_sequence):
     sequence_is_broken = True
     if (len(current_sequence) > 2) and (len(next_sequence) > 2):
         if (current_sequence[0] == next_sequence[0]) and (current_sequence[1] == next_sequence[1]):
             sequence_is_broken = False
-    elif (current_sequence[0].lower().startswith('enrichment')) and \
-            (next_sequence[0].lower().startswith('remedial')):
+    elif is_enrichment_remedial_pair(current_sequence, next_sequence):
         sequence_is_broken= False
     return sequence_is_broken
 
