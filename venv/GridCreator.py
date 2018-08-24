@@ -30,7 +30,7 @@ def make_activity_characteristics(grid):
         activity_map[activity['Activity Identifier']] = {'mandatory': activity['mandatory']}
     return activity_map
 
-def generate_grid(curriculum_excel, raw_material_dir, output_dir):
+def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_dir):
     output_dir = os.path.join(output_dir, os.path.splitext(os.path.basename(curriculum_excel))[0])
     make_clean_dir(output_dir)
     print("Opening " + curriculum_excel)
@@ -39,11 +39,11 @@ def generate_grid(curriculum_excel, raw_material_dir, output_dir):
     for sheet_name in w.sheetnames:
         grid = ExcelParser.forge_grid(w[sheet_name])
         chapter_activities.append({'chapter_name': sheet_name, 'activities': make_activity_characteristics(grid)})
-        GridWriter.forge_milestone_grid(grid, sheet_name, raw_material_dir, os.path.join(output_dir, sheet_name))
+        GridWriter.forge_milestone_grid(grid, sheet_name, raw_material_dir, activities_dir, os.path.join(output_dir, sheet_name))
     GridWriter.write_chapter_activities(chapter_activities, raw_material_dir, output_dir)
 
-if len(sys.argv) == 4:
+if len(sys.argv) == 5:
     generate_grid(curriculum_excel=sys.argv[1],
-                  raw_material_dir = sys.argv[2], output_dir=sys.argv[3])
+                  raw_material_dir=sys.argv[2], activities_dir=sys.argv[3], output_dir=sys.argv[4])
 else:
-    print('Grid creator\nUsage: ' + sys.argv[0] + ' <excel filename> <raw material dir> <output dir>')
+    print('Grid creator\nUsage: ' + sys.argv[0] + ' <excel filename> <raw material dir> <activities dir> <output dir>')

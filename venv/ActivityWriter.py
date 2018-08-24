@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 import ActivityHTMLPieces
 import pandas as pd
 from urllib.parse import quote
@@ -13,11 +14,17 @@ def copy_common_resources(source_dir, destination_dir):
         shutil.copy(os.path.join(source_dir, file), os.path.join(destination_dir, file))
 
 def file2id(filename, id_extension = ''):
-    return filename.replace(' ', '_') + id_extension
+    if filename == '':
+        return ''
+    else:
+        return quote(filename.replace(' ', '_') + id_extension)
 
 def image_html_line(imagefile, class_name, attrs = ''):
-    return '<img id=' + file2id(imagefile, '.pic') + ' class="' + class_name + '" ' + attrs + \
+    return '<img id=' + file2id(imagefile, '.id') + ' class="' + class_name + '" ' + attrs + \
            ' src="' + quote(imagefile) + '" alt="' + imagefile + '">\n'
+
+def text_html_para(cell_text, class_name, attrs = ''):
+    return '<p id=' + file2id(cell_text,'.id') + ' class="' + class_name + '" ' + attrs + '>' + cell_text + '</p>\n'
 
 class ActivityWriter:
     def __init__(self, pics_to_sounds):
@@ -48,14 +55,14 @@ class ActivityWriter:
     def write_content_holder(self, html_file):
         html_file.write(ActivityHTMLPieces.content_holder)
 
-    def audio_source_and_play_instruction(self, imagename):
-        audio_source = ''
-        play_instruction = ''
+    def audio_source_and_play_instruction(self, imagename, image_ident):
+        audio_source = None
+        play_instruction = None
         if imagename in self.pics_sounds_map:
             audio = self.pics_sounds_map[imagename]
             audio_source = '<audio id=' + file2id(audio) + '> <source src="' + quote(audio) + \
                            '" type="audio/' + audio.split('.')[-1] + '"></audio>\n'
-            play_instruction = 'document.getElementById(\'' + file2id(audio) + '\').play();'
+            play_instruction = "play_and_mark('" + file2id(audio) + "', '" + image_ident + "');"
             shutil.copy(audio, os.path.join(self.activity_dir, audio))
         else:
             print(imagename + ': no sound')
@@ -87,24 +94,34 @@ class ActivityWriter:
         for row_number in range(0, len(images_layout)):
             html_file.write('<tr>\n')
             for column_number in range (0, len(images_layout[row_number])):
-                image_layout = images_layout[row_number][column_number]
-                image_file = cell_text = None
-                if image_layout is not None:
-                    if 'image' in image_layout: image_file = image_layout['image']
-                    if 'text' in image_layout: cell_text = image_layout['text']
-                    if 'merge_above' in image_layout: continue
                 rowspan = self.compute_rowspan(images_layout, row_number, column_number)
+                image_layout = images_layout[row_number][column_number]
+                picture = html_line = initial_display_style = attr = None
+                if image_layout is not None:
+                    if 'image' in image_layout:
+                        picture = image_layout['image']
+                        attr = 'style="max-height:' + str(90 // rows * rowspan) + 'vh;max-width:' + \
+                                    str(90 // cols) + 'vw;" '
+                        html_line = image_html_line
+                        shutil.copy(picture, self.activity_dir + '/' + picture)
+                    if 'text' in image_layout:
+                        picture = image_layout['text']
+                        attr = 'style="font-size:500%"'
+                        html_line = text_html_para
+                    if 'merge_above' in image_layout: continue
+
                 html_file.write('<td' + self.rowspan_html(rowspan) + '>\n')
-                if image_file is not None:
-                    audio_source, play_instruction = self.audio_source_and_play_instruction(image_file)
-                    html_file.write(audio_source)
-                    html_file.write('<a onclick="' + play_instruction + 'mark_tap(\'' +image_file+ '.pic\');">\n')
-                    image_attr = 'style="max-height:' + str(90 // rows * rowspan) + 'vh;max-width:' + str(90 // cols) + 'vw;" '
-                    html_file.write(image_html_line(image_file, 'picture', image_attr))
-                    html_file.write('</a>')
-                    shutil.copy(image_file, self.activity_dir + '/' + image_file)
-                if cell_text is not None:
-                    html_file.write('<p>' + cell_text + '</p>\n')
+                if picture is not None:
+                    picture_id = file2id(picture, '.id')
+                    audio_source, play_instruction = self.audio_source_and_play_instruction(picture, picture_id)
+                    if audio_source is not None:
+                        html_file.write(audio_source)
+                    if play_instruction is not None:
+                        html_file.write('<a onclick="' + play_instruction + 'mark_tap(\'' + picture_id + '\');">\n')
+                        html_file.write(html_line(picture, "hidden_picture", attr))
+                        html_file.write('</a>')
+                    else:
+                        html_file.write(html_line(picture, "picture", attr))
                 html_file.write('</td>\n')
             html_file.write('</tr>\n')
         html_file.write('</table>\n')
@@ -132,35 +149,38 @@ class ActivityWriter:
             is_first_screen = False
 
     def write_screen_status(self, html_file, layout):
-        is_first_screen = True
+        screen_state = []
         for screen in layout['images.layout']:
-            if not is_first_screen:
-                html_file.write(', ')
-            html_file.write('{')
-            is_first_image = True
+            one_screen_state = {}
             for image_layout in sum(screen, []):
-                if image_layout is not None and 'image' in image_layout and image_layout['image'] is not None and \
-                        image_layout['image'] in self.pics_sounds_map:
-                    if not is_first_image:
-                        html_file.write(', ')
-                    html_file.write('\'' + image_layout['image'] + '.pic\': 0')
-                    is_first_image = False
-            html_file.write('}')
-            is_first_screen = False
+                if image_layout is not None:
+                    picture = None
+                    if 'image' in image_layout and image_layout['image'] is not None and \
+                            image_layout['image'] in self.pics_sounds_map:
+                        picture = image_layout['image']
+                    if 'text' in image_layout and image_layout['text'] is not None and \
+                            image_layout['text'] in self.pics_sounds_map:
+                        picture = image_layout['text']
+                    if picture is not None:
+                        one_screen_state[file2id(picture,'.id')] = {"hitcount": 0, "after": file2id(image_layout['after'],'.id')}
+            screen_state.append(one_screen_state)
+        s = json.dumps(screen_state)
+        html_file.write(s)
 
     def write_tap_listen_script(self, html_file, layout):
         html_file.write('<script>\n')
-        html_file.write('var screen_state = [')
+        html_file.write('var screen_state = ')
         self.write_screen_status(html_file, layout)
-        html_file.write('];\n')
+        html_file.write(';\n')
         html_file.write('var current_screen = 0;\n')
         html_file.write('var screen_html = [\n')
         self.write_screens_html_array(html_file, layout)
         html_file.write('\n]\n')
-        html_file.write(ActivityHTMLPieces.script_to_check_mark_complete)
+        html_file.write(ActivityHTMLPieces.script_to_play_and_mark)
+        html_file.write(ActivityHTMLPieces.script_to_refresh_next_and_prev)
         html_file.write(ActivityHTMLPieces.script_to_mark_tap_listen)
-        html_file.write(ActivityHTMLPieces.script_to_switch_next_screen)
-        html_file.write(ActivityHTMLPieces.script_to_switch_prev_screen)
+        html_file.write(ActivityHTMLPieces.script_to_next_and_prev)
+        html_file.write(ActivityHTMLPieces.script_to_refresh_image_states)
         html_file.write(ActivityHTMLPieces.script_to_refresh)
         html_file.write('</script>\n')
 

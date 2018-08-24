@@ -39,19 +39,26 @@ def collect_screen(ws, excel_col_map, screen_rows):
     screen = []
     for row_number in range(screen_rows['start'], screen_rows['end']+1):
         row_layout = []
-        for column in ['images col1', 'images col2', 'images col3']:
-            cell_value = ws[excel_col_map[column] + str(row_number)]
+        for column_number in ['1', '2', '3']:
+            picture_col = 'images col' + column_number
+
+            cell_value = ws[excel_col_map[picture_col] + str(row_number)]
             if cell_value is None:
                 row_layout.append(None)
             else:
                 cell_value = cell_value.strip()
+                picture_desc = {}
                 if cell_value.lower().endswith('.png') or cell_value.lower().endswith('.jpg') or \
                                            cell_value.lower().endswith('.jpeg'):
-                    row_layout.append({'image': cell_value})
+                    picture_desc['image'] = cell_value
                 elif cell_value.startswith('|'):
-                    row_layout.append({'merge_above': 1})
+                    picture_desc['merge_above'] = 1
                 else:
-                    row_layout.append({'text': cell_value})
+                    picture_desc['text'] = cell_value
+                prior = ws[excel_col_map['col' + column_number + ' prior'] + str(row_number)]
+                if prior == None: prior = ''
+                picture_desc['after'] = prior.strip()
+                row_layout.append(picture_desc)
             #if you want to specify style: add more columns and use re.findall(r'(\w+=".+?")
         screen.append(row_layout)
     return screen
@@ -152,12 +159,13 @@ def forge_grid(worksheet):
     return grid
 
 def pics_sounds_map(excel_file):
-    w = load_workbook(excel_file, read_only=True, data_only=True)
+    w = load_workbook(excel_file, data_only=True)
     ws = Sheet(w[w.sheetnames[0]])
     heading_row = 1
     excel_col_map = map_headings(ws, heading_row)
     pics_to_sounds = {}
 
     for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
-        pics_to_sounds[ws[excel_col_map['Picture'] + str(current_row)]] = ws[excel_col_map['Sound'] + str(current_row)]
+        pics_to_sounds[ws[excel_col_map['Picture'] + str(current_row)].strip()] = \
+            ws[excel_col_map['Sound'] + str(current_row)].strip()
     return pics_to_sounds

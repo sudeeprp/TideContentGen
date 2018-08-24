@@ -12,6 +12,20 @@ def copy_files(images_to_copy, from_dir, to_dir):
     for image_filename in images_to_copy:
         shutil.copyfile(os.path.join(from_dir, image_filename), os.path.join(to_dir, image_filename))
 
+def copy_activity_folder(activities_dir, activity_identifier, target_dir):
+    copied_target = None
+    for file_entry in os.listdir(activities_dir):
+        activity_path = os.path.join(activities_dir, file_entry)
+        if file_entry == activity_identifier:
+            shutil.copytree(activity_path, os.path.join(target_dir, file_entry))
+            copied_target = target_dir
+            break
+        elif os.path.isdir(activity_path):
+            copied_target = copy_activity_folder(activity_path, activity_identifier, target_dir)
+            if copied_target != None:
+                break
+    return copied_target
+
 def form_activity_layout(html_file, activities):
     html_file.write('<tr class="activity_list">\n')
     for activity in activities:
@@ -79,7 +93,7 @@ def write_image_html(html_file, image_name, caption, raw_material_dir):
     html_file.write('<figcaption>' + caption + '</figcaption></figure>\n')
 
 
-def write_grid_html_columns(html_file, grid_columns, raw_material_dir):
+def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activities_dir):
     max_rows = 4
     lcm_of_max_rows = 12
     filled_rows_in_lcm = []
@@ -98,13 +112,16 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir):
                                     quote(activities[row]['Activity Identifier'] + '/' + 'index.html') + '">\n')
                     write_image_html(html_file, activities[row]['Activity logo'],
                                      activities[row]['Display name'], raw_material_dir)
+                    copy_target = copy_activity_folder(activities_dir, activities[row]['Activity Identifier'], os.path.dirname(html_file.name))
+                    if copy_target == None:
+                        print('Activity ' + activities[row]['Activity Identifier'] + ' not found')
                     html_file.write('</a></td>\n')
         html_file.write('</tr>\n')
     if max([len(activities) for activities in grid_columns]) > max_rows:
         print('WARNING: number of parallel activities exceeds ' + str(max_rows))
 
 
-def forge_milestone_grid(grid, milestone_name, raw_material_dir, output_dir):
+def forge_milestone_grid(grid, milestone_name, raw_material_dir, activities_dir, output_dir):
     print('Making grid in ' + output_dir)
     os.mkdir(output_dir)
     html_file = open(os.path.join(output_dir, 'index.html'), 'w')
@@ -117,7 +134,7 @@ def forge_milestone_grid(grid, milestone_name, raw_material_dir, output_dir):
         column, next_activity_index = get_grid_column(grid, current_activity_index)
         grid_columns.append(column)
         current_activity_index = next_activity_index
-    write_grid_html_columns(html_file, grid_columns, raw_material_dir)
+    write_grid_html_columns(html_file, grid_columns, raw_material_dir, activities_dir)
     html_file.write('</table>\n')
     html_file.write(GridHTMLPieces.body_end)
     html_file.write(GridHTMLPieces.tail)
