@@ -38,7 +38,7 @@ figure img {
 figure figcaption {
     text-align: center;
     font-family: Verdana;
-    font-size: small;
+    font-size: medium;
 }
 </style>
 '''
@@ -59,7 +59,8 @@ function set_students_in_chapter(chapter, students_in_chapter) {
     for(i = 0; i < numStudents; i++) {
         console.log('got thumbnail:')
         console.log(students_in_chapter[i].thumbnail)
-        students_html += "<img style='width:100px;height:100px;padding-top:3px;padding-left:3px;padding-bottom:3px;' src='data:image/jpeg;base64, " + students_in_chapter[i].thumbnail + "' />";
+        students_html += "<figure><img style='width:100px;height:100px;padding-top:3px;padding-left:3px;padding-bottom:3px;' src='data:image/jpeg;base64, " + 
+                students_in_chapter[i].thumbnail + "' /><figcaption>" + students_in_chapter[i].name + "</figcaption></figure>";
     }
     document.getElementById(chapter + '.students').innerHTML = students_html;
 }

@@ -26,7 +26,8 @@ def copy_activity_folder(activities_dir, activity_identifier, target_dir):
                 break
     return copied_target
 
-def form_activity_layout(html_file, activities):
+#TODO: Remove this
+'''def form_activity_layout(html_file, activities):
     html_file.write('<tr class="activity_list">\n')
     for activity in activities:
         html_file.write('<td>\n')
@@ -53,6 +54,7 @@ def forge_grid(milestones, content_folder_name):
     html_file.write('</table>\n')
     html_file.write(GridHTMLPieces.tail)
     html_file.close()
+'''
 
 def is_enrichment_remedial_pair(current_sequence, next_sequence):
     return ((current_sequence[0].lower().startswith('enrichment')) and
@@ -107,26 +109,31 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                 row_span = lcm_of_max_rows//len(activities)
                 if table_row % row_span == 0:
                     row = table_row // row_span
-                    html_file.write('<td rowspan="' + str(row_span) + '">\n')
-                    html_file.write('<a href="' +
-                                    quote(activities[row]['Activity Identifier'] + '/' + 'index.html') + '">\n')
+                    html_file.write('<td rowspan="' + str(row_span) +
+                                    '" onclick="Android.startActivity(\'' + activities[row]['Activity Identifier'] +
+                                    '\');">\n')
+                    #html_file.write('<a href="' +
+                    #                quote(activities[row]['Activity Identifier'] + '/' + 'index.html') + '">\n')
                     write_image_html(html_file, activities[row]['Activity logo'],
                                      activities[row]['Display name'], raw_material_dir)
                     copy_target = copy_activity_folder(activities_dir, activities[row]['Activity Identifier'], os.path.dirname(html_file.name))
                     if copy_target == None:
                         print('Activity ' + activities[row]['Activity Identifier'] + ' not found')
-                    html_file.write('</a></td>\n')
+                    #html_file.write('</a>')
+                    html_file.write('</td>\n')
         html_file.write('</tr>\n')
     if max([len(activities) for activities in grid_columns]) > max_rows:
         print('WARNING: number of parallel activities exceeds ' + str(max_rows))
 
 
-def forge_milestone_grid(grid, milestone_name, raw_material_dir, activities_dir, output_dir):
+def forge_milestone_grid(grid, chapter_name, raw_material_dir, activities_dir, output_dir):
     print('Making grid in ' + output_dir)
     os.mkdir(output_dir)
     html_file = open(os.path.join(output_dir, 'index.html'), 'w')
     html_file.write(GridHTMLPieces.begin_head)
-    html_file.write(GridHTMLPieces.body_start)
+    html_file.write('<body onload="Android.chapterEntered(\'' + chapter_name + '\')">')
+    html_file.write(GridHTMLPieces.body_table_start)
+    html_file.write('<h1>' + chapter_name + '</h1>')
     html_file.write('<table class="grid_table">\n')
     current_activity_index = 0
     grid_columns = []
@@ -136,7 +143,8 @@ def forge_milestone_grid(grid, milestone_name, raw_material_dir, activities_dir,
         current_activity_index = next_activity_index
     write_grid_html_columns(html_file, grid_columns, raw_material_dir, activities_dir)
     html_file.write('</table>\n')
-    html_file.write(GridHTMLPieces.body_end)
+    html_file.write(GridHTMLPieces.body_table_end)
+    html_file.write('</body>')
     html_file.write(GridHTMLPieces.tail)
     html_file.close()
     copy_files(grid_images_to_copy, raw_material_dir, output_dir)

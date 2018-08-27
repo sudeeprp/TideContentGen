@@ -80,13 +80,12 @@ figure figcaption {
 }
 </style>
 '''
-body_start = '''\
-<body>
+body_table_start = '''\
 <table style="height: 100vh; width: 100vw; vertical-align:center">
 <tr>
 <td>
 '''
-body_end = '''\
+body_table_end = '''\
 </td>
 </tr>
 </table>
