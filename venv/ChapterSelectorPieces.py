@@ -3,7 +3,7 @@ begin_head='''\
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>The Grid</title>
+<title>Chapter Selector</title>
 
 <style>
 html {
@@ -47,35 +47,30 @@ script_head='''\
 '''
 scripts='''\
 function refresh_status() {
-    numChapters = chapters.length;
-    for(i = 0; i < numChapters; i++) {
-        status = Android.getChapterStatus(chapters[i]);
+    var numChapters = chapters.length;
+    for(var i = 0; i < numChapters; i++) {
+        var status = Android.getChapterStatus(chapters[i]);
         document.getElementById(chapters[i] + '.status').src = 'chapter_' + status + '.png';
     }
 }
 function set_students_in_chapter(chapter, students_in_chapter) {
-    students_html = ''
-    numStudents = students_in_chapter.length;
-    for(i = 0; i < numStudents; i++) {
-        console.log('got thumbnail:')
-        console.log(students_in_chapter[i].thumbnail)
+    var students_html = ''
+    var numStudents = students_in_chapter.length;
+    for(var i = 0; i < numStudents; i++) {
         students_html += "<figure><img style='width:100px;height:100px;padding-top:3px;padding-left:3px;padding-bottom:3px;' src='data:image/jpeg;base64, " + 
                 students_in_chapter[i].thumbnail + "' /><figcaption>" + students_in_chapter[i].name + "</figcaption></figure>";
     }
     document.getElementById(chapter + '.students').innerHTML = students_html;
 }
 function refresh_students() {
-    numChapters = chapters.length;
-    for(i = 0; i < numChapters; i++) {
-        var studentsInChapterJSON = Android.getStudentsInChapter(chapters[i])
-        console.log("**Got json")
-        console.log(studentsInChapterJSON)
-        var students_in_chapter = JSON.parse(studentsInChapterJSON);
-        console.log("Got students " + students_in_chapter.length);
-        if(students_in_chapter.length > 0) {
-            set_students_in_chapter(chapters[i], students_in_chapter);
-        }
+    var studentsInSubjectJSON = Android.getStudentsInSubject();
+    var students_in_subject = JSON.parse(studentsInSubjectJSON);
+    var numChapters = students_in_subject.length;
+    for(var i = 0; i < numChapters; i++) {
+        var students_in_chapter = students_in_subject[i].students;
+        set_students_in_chapter(students_in_subject[i].chapter_name, students_in_chapter);
     }
+    console.log("done with refresh_students. i is " + i);
 }
 function refresh_screen() {
     refresh_status();
