@@ -10,8 +10,6 @@ html {
 height: 100%;
 }
 table { border: none; border-collapse: collapse; }
-table td { border-left: 1px solid #000; }
-table td:first-child { border-left: none; }
 .nomargins {
     margin-top: 0px;
     margin-left: 0px;
@@ -47,8 +45,7 @@ table td:first-child { border-left: none; }
     text-align: center;
     width: auto;
     table-layout: fixed;
-    background: url("pencil.png") no-repeat;
-    background-size: 100% 100%;
+    background: url("map_paper.png");
 }
 .milestone_head {
     margin-top: 3px;
@@ -70,26 +67,19 @@ figure img {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    max-height: 64px;
-    max-width: 64px;
+    max-height: 100px;
+    max-width: 100px;
 }
 figure figcaption {
     text-align: center;
     font-family: Verdana;
-    font-size: small;
+    font-size: medium;
+}
+.linkimages {
+    max-height:320px;
+    max-width:80px;
 }
 </style>
-'''
-body_table_start = '''\
-<table style="height: 100vh; width: 100vw; vertical-align:center">
-<tr>
-<td>
-'''
-body_table_end = '''\
-</td>
-</tr>
-</table>
-</body>
 '''
 tail = '''\
 </html>

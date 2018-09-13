@@ -18,12 +18,6 @@ overflow: hidden;
     margin-right: 0px;
     margin-bottom: 0px;
 }
-.bigborder {
-    background-image: url('1-French.png'), url('1-French.png'), url('1-French.png'), url('1-French.png');
-    background-repeat: repeat-x, repeat-y, repeat-x, repeat-y;
-    background-attachment: fixed;
-    background-position: top, left, bottom, right; 
-}
 .content {
     padding: 25px;
     width: 100%;
@@ -34,7 +28,7 @@ overflow: hidden;
     visibility: hidden;
 }
 .picture, .done_picture {
-    font-family: Comic Sans, Comic Sans MS, cursive;
+    font-family: Arial, Helvetica, sans-serif;
     padding: 2px;
     border: 3px solid transparent;
     visibility: inherit;

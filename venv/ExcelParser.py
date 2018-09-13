@@ -55,7 +55,7 @@ def collect_screen(ws, excel_col_map, screen_rows):
                     picture_desc['merge_above'] = 1
                 else:
                     picture_desc['text'] = cell_value
-                prior = ws[excel_col_map['col' + column_number + ' prior'] + str(row_number)]
+                prior = ws[excel_col_map['col' + column_number + ' after'] + str(row_number)]
                 if prior == None: prior = ''
                 picture_desc['after'] = prior.strip()
                 row_layout.append(picture_desc)
@@ -87,6 +87,7 @@ def collect_activities(ws, excel_col_map, row_range):
         activity_ident, activity_rows = \
             scan_row_range(ws, 'Activity Identifier', excel_col_map, current_row, row_range['end'])
         if activity_ident is not None:
+            print(activity_ident)
             activities.append(collect_activity(ws, excel_col_map, activity_rows))
         current_row = activity_rows['end'] + 1
     return activities
@@ -121,6 +122,12 @@ activity_numid_col_head = 'numid'
 head_row = 3
 start_col = 'B'
 
+def activity_id_to_folder(logo, numid):
+    if logo.startswith('Tab'):
+        logo = 'Tab'
+    activity_folder = logo + "_" + str(numid)
+    return activity_folder
+
 def forge_grid(worksheet):
     ws = Sheet(worksheet)
     curriculum_col_map = map_headings(ws, heading_row=head_row, start_col=start_col)
@@ -141,6 +148,7 @@ def forge_grid(worksheet):
                 {'sequence': sequence,
                  'Activity logo': logo,
                  'Activity Identifier': activity_id,
+                 'Activity folder': activity_id_to_folder(logo, numid),
                  'Display name': str(numid),
                  'mandatory': is_mandatory
                 }

@@ -5,8 +5,7 @@ import ActivityHTMLPieces
 import pandas as pd
 from urllib.parse import quote
 
-common_files = ['1-French.png', '1-Math.png', '2-French.png', '2-Math.png', 'bell-sheet0.png',
-                'img_speakerbtn-sheet0.png', 'nextsheetsheet-sheet1.png',
+common_files = ['bell-sheet0.png', 'img_speakerbtn-sheet0.png', 'nextsheetsheet-sheet1.png',
                 'backarrow1-sheet0.png']
 
 def copy_common_resources(source_dir, destination_dir):
@@ -40,13 +39,12 @@ class ActivityWriter:
 
     def write_content_start(self, html_file):
         html_file.write('<body class="nomargins" onload="refresh_screen()">\n')
-        html_file.write('<div class="bigborder">\n')
 
     def write_instruction(self, html_file, layout):
         instruction_pic = 'img_speakerbtn-sheet0.png'
         instruction_sound = layout['instruction.sound']
         shutil.copy(instruction_sound, os.path.join(self.activity_dir, instruction_sound))
-        html_file.write('<audio id=' + file2id(instruction_sound) + '> <source src="' + quote(instruction_sound) +\
+        html_file.write('<audio autoplay id=' + file2id(instruction_sound) + '> <source src="' + quote(instruction_sound) +\
                         '" type="audio/' + instruction_sound.split('.')[-1] + '"></audio>\n')
         html_file.write('<a onclick="document.getElementById(\'' + file2id(instruction_sound) + '\').play();">\n')
         html_file.write(image_html_line(instruction_pic, 'instruction'))
@@ -131,7 +129,6 @@ class ActivityWriter:
         html_file.write(image_html_line('bell-sheet0.png', 'overall_done_hidden'))
         html_file.write('</a>')
         html_file.write(ActivityHTMLPieces.next_prev)
-        html_file.write('</div>\n')
 
     def close_html(self, html_file):
         html_file.write('</body>\n')
