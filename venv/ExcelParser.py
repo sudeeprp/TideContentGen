@@ -65,8 +65,10 @@ def collect_screen(ws, excel_col_map, screen_rows):
 
 
 def collect_activity(ws, excel_col_map, activity_rows):
+    #While generating activities, the name in the excel will not have 'Tab 2' and so on.
     activity = \
         {'Activity Identifier': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
+         'Activity folder': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
          'instruction.sound': ws[excel_col_map['instruction.sound'] + str(activity_rows['start'])].strip(),
          'images.layout': []}
     current_row = activity_rows['start']
@@ -136,6 +138,9 @@ def forge_grid(worksheet):
     blank_rows = 0
     while current_row <= ws.wsheet.max_row:
         activity = ws[curriculum_col_map[activity_sequence_col_head] + str(current_row)]
+        if activity is None or activity == "":
+            break
+        activity = str(activity)
         is_mandatory = ws.wsheet[curriculum_col_map[activity_sequence_col_head] + str(current_row)].font.bold
         if activity is not None:
             sequence = re.findall(r'\d+', activity)

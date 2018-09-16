@@ -7,6 +7,12 @@ import errno
 import time
 from openpyxl import load_workbook
 
+def write_content_description(output_dir):
+    content_description = '{"content_version": "1"}'
+    content_desc_file = open(output_dir + '/content_descriptor.json', 'w')
+    content_desc_file.write(content_description)
+    content_desc_file.close()
+
 def make_clean_dir(output_dir):
     if os.path.isdir(output_dir):
         shutil.rmtree(output_dir)
@@ -41,6 +47,7 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_dir
         chapter_activities.append({'chapter_name': sheet_name, 'activities': make_activity_characteristics(grid)})
         GridWriter.forge_milestone_grid(grid, sheet_name, raw_material_dir, activities_dir, os.path.join(output_dir, sheet_name))
     GridWriter.write_chapter_activities(chapter_activities, raw_material_dir, output_dir)
+    write_content_description(output_dir)
 
 if len(sys.argv) == 5:
     generate_grid(curriculum_excel=sys.argv[1],
