@@ -8,7 +8,7 @@ import time
 from openpyxl import load_workbook
 
 def write_content_description(output_dir):
-    content_description = '{"content_version": "1"}'
+    content_description = '{"content_version": "3 compressed"}'
     content_desc_file = open(output_dir + '/content_descriptor.json', 'w')
     content_desc_file.write(content_description)
     content_desc_file.close()
@@ -36,21 +36,21 @@ def make_activity_characteristics(grid):
         activity_map[activity['Activity Identifier']] = {'mandatory': activity['mandatory']}
     return activity_map
 
-def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_dir):
-    output_dir = os.path.join(output_dir, os.path.splitext(os.path.basename(curriculum_excel))[0])
-    make_clean_dir(output_dir)
+def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_parent):
+    grid_output_dir = os.path.join(output_parent, os.path.splitext(os.path.basename(curriculum_excel))[0])
+    make_clean_dir(grid_output_dir)
     print("Opening " + curriculum_excel)
     w = load_workbook(curriculum_excel)
     chapter_activities = []
     for sheet_name in w.sheetnames:
         grid = ExcelParser.forge_grid(w[sheet_name])
         chapter_activities.append({'chapter_name': sheet_name, 'activities': make_activity_characteristics(grid)})
-        GridWriter.forge_milestone_grid(grid, sheet_name, raw_material_dir, activities_dir, os.path.join(output_dir, sheet_name))
-    GridWriter.write_chapter_activities(chapter_activities, raw_material_dir, output_dir)
-    write_content_description(output_dir)
+        GridWriter.forge_milestone_grid(grid, sheet_name, raw_material_dir, activities_dir, os.path.join(grid_output_dir, sheet_name))
+    GridWriter.write_chapter_activities(chapter_activities, raw_material_dir, grid_output_dir)
+    write_content_description(output_parent)
 
 if len(sys.argv) == 5:
     generate_grid(curriculum_excel=sys.argv[1],
-                  raw_material_dir=sys.argv[2], activities_dir=sys.argv[3], output_dir=sys.argv[4])
+                  raw_material_dir=sys.argv[2], activities_dir=sys.argv[3], output_parent=sys.argv[4])
 else:
     print('Grid creator\nUsage: ' + sys.argv[0] + ' <excel filename> <raw material dir> <activities dir> <output dir>')

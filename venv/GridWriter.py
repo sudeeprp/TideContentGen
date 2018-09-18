@@ -133,7 +133,8 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                     if len(copied_folders) > 1:
                         android_call = 'Android.subActivity'
                         create_sub_activity_set(raw_material_dir, os.path.dirname(html_file.name),
-                                                activity_folder, activities[row]['Activity logo'], copied_folders)
+                                                activities[row]['Display name'], activity_folder,
+                                                activities[row]['Activity logo'], copied_folders)
                     if len(copied_folders) == 0:
                         print('Activity ' + activity_folder + ' not found')
 
@@ -147,15 +148,21 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
     if max([len(activities) for activities in grid_columns]) > max_rows:
         print('WARNING: number of parallel activities exceeds ' + str(max_rows))
 
-def create_sub_activity_set(raw_material_dir, target_dir, activity_folder, logo, copied_files):
+def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, activity_folder, logo, copied_files):
     target_activity_folder = os.path.join(target_dir, activity_folder)
     logo_filename = logo + '.png'
+    background_filename = "map_paper.png"
     os.mkdir(target_activity_folder)
     sub_activity_html = open(os.path.join(target_activity_folder, "index.html"), "w")
     shutil.copy(os.path.join(raw_material_dir, logo_filename), os.path.join(target_activity_folder, logo_filename))
+    shutil.copy(os.path.join(raw_material_dir, background_filename), os.path.join(target_activity_folder, background_filename))
     sub_activity_html.write(SetOfSubPieces.begin_head)
+    counter = 1
     for directory in copied_files:
-        sub_activity_html.write('<img src="' + logo_filename + '" onclick="Android.startActivity(\'' + directory + '\');" alt="' + logo + '">\n')
+        sub_activity_html.write('<figure><img src="' + logo_filename +
+                                '" onclick="Android.startActivity(\'' + directory + '\');" alt="' + logo + '">' +
+                                '<figcaption>' + activity_identifier + " (" + str(counter) + ')</figcaption></figure>\n')
+        counter += 1
     sub_activity_html.write(SetOfSubPieces.tail)
     sub_activity_html.close()
 
@@ -164,8 +171,10 @@ def forge_milestone_grid(grid, chapter_name, raw_material_dir, activities_dir, o
     os.mkdir(output_dir)
     html_file = open(os.path.join(output_dir, 'index.html'), 'w')
     html_file.write(GridHTMLPieces.begin_head)
-    html_file.write('<body onload="Android.chapterEntered(\'' + chapter_name + '\')">')
-    html_file.write('<h1>' + chapter_name + '</h1>')
+    html_file.write('<body class=nomargins onload="Android.chapterEntered(\'' + chapter_name + '\');">\n')
+    html_file.write('<h1  class=chapterhead><span onclick="Android.chapterSelector();">&nbsp;&#x21CB;&nbsp;&nbsp;</span>' +
+                    chapter_name + '</h1>\n')
+    html_file.write('<div style="overflow:auto; margin-top: 80px;">\n')
     html_file.write('<table class="grid_table">\n')
     current_activity_index = 0
     grid_columns = []
@@ -175,7 +184,8 @@ def forge_milestone_grid(grid, chapter_name, raw_material_dir, activities_dir, o
         current_activity_index = next_activity_index
     write_grid_html_columns(html_file, grid_columns, raw_material_dir, activities_dir)
     html_file.write('</table>\n')
-    html_file.write('</body>')
+    html_file.write('</div>\n')
+    html_file.write('</body>\n')
     html_file.write(GridHTMLPieces.tail)
     html_file.close()
     copy_files(grid_images_to_copy, raw_material_dir, output_dir)
