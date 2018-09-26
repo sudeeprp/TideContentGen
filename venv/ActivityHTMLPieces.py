@@ -11,6 +11,7 @@ height: 100%;
 }
 body {
 overflow: hidden;
+user-select: none;
 }
 .nomargins {
     margin-top: 0px;

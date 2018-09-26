@@ -5,6 +5,9 @@ begin_head = '''\
 <meta charset="utf-8"/>
 <title>Sub-grid</title>
 <style>
+body {
+user-select: none;
+}
 figure {
     display: inline-block;
     margin: 2px;

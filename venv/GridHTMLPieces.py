@@ -11,6 +11,7 @@ height: 100%;
 }
 body {
 overflow-y: hidden;
+user-select: none;
 }
 table { border: none; border-collapse: collapse; }
 .nomargins {

@@ -9,19 +9,28 @@ begin_head='''\
 html {
 height: 100%;
 }
+body {
+user-select: none;
+}
 .nomargins {
     margin-top: 0px;
     margin-left: 0px;
     margin-right: 0px;
     margin-bottom: 0px;
 }
-.chapter_table, .chapter_cell {
+.chapter_table, .chapter_cell, .chapter_icon {
     border-collapse:collapse; border:1px solid #FF00FF;
+}
+.chapter_table, .chapter_cell {
     text-align: left;
 }
 .chapter_table {
-    width: 90%;
+    width: 100%;
     table-layout: fixed;
+}
+.chapter_icon {
+    width:8cm;
+    text-align: center;
 }
 figure {
     display: inline-block;
@@ -83,7 +92,7 @@ function set_active_chapter(chapter) {
 </script>
 '''
 body_table_start='''\
-<body onload="refresh_screen()">
+<body onload="Android.selectorEntered(); refresh_screen();">
 <table class="chapter_table">
 '''
 body_table_end='''\

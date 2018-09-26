@@ -1,6 +1,7 @@
 import ExcelParser
 import ActivityWriter
 import GridWriter
+import Compressor
 import sys
 import os
 from pathlib import Path
@@ -39,6 +40,7 @@ def parse_excel_and_make_activities(excel_filename, pics_sounds_excel, output_di
     content_folder_name = make_clean_content_folder(output_dir, excel_filename)
     for activity in activities:
         make_activity_in_content_folder(content_folder_name, pics_to_sounds, activity)
+        Compressor.compress_path(content_folder_name)
 
 
 if len(sys.argv) == 4:

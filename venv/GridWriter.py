@@ -17,7 +17,8 @@ def copy_activity_folder(activities_dir, activity_identifier, target_dir):
     copied_files = []
     for file_entry in os.listdir(activities_dir):
         activity_path = os.path.join(activities_dir, file_entry)
-        if file_entry == activity_identifier or file_entry.startswith(activity_identifier + '.'):
+        if os.path.isdir(activity_path) and \
+                (file_entry == activity_identifier or file_entry.startswith(activity_identifier + '.')):
             shutil.copytree(activity_path, os.path.join(target_dir, file_entry))
             copied_files.append(file_entry)
         elif os.path.isdir(activity_path):
@@ -26,49 +27,18 @@ def copy_activity_folder(activities_dir, activity_identifier, target_dir):
                 copied_files.append(file)
     return copied_files
 
-#TODO: Remove this
-'''def form_activity_layout(html_file, activities):
-    html_file.write('<tr class="activity_list">\n')
-    for activity in activities:
-        html_file.write('<td>\n')
-        html_file.write('<a href="' + quote(activity['activity id'] + '/' + 'index.html') + '">')
-        html_file.write('<figure>\n')
-        html_file.write('<img src="' + quote(activity['activity id'] + '/' + activity['logo']) +
-                        '" alt="Tab activity">\n')
-        html_file.write('<figcaption>' + activity['activity name'] + '</figcaption>\n')
-        html_file.write('</figure>\n')
-        html_file.write('</a>')
-        html_file.write('</td>\n')
-    html_file.write('</tr>\n')
+def is_enrichment_remedial_pair(current_activity, next_activity):
+    return (current_activity['qualifier'] == 'enrichment' and next_activity['qualifier'] == 'reinforcement') or \
+            (current_activity['qualifier'] == 'reinforcement' and next_activity['qualifier'] == 'enrichment')
 
-
-def forge_grid(milestones, content_folder_name):
-    html_file = open(content_folder_name + '/' + content_folder_name + '.html', 'w')
-    html_file.write(GridHTMLPieces.begin_head)
-    html_file.write('<table class="grid_table">\n')
-    for milestone in milestones:
-        html_file.write('<tr class="milestone_head">\n')
-        html_file.write('<td colspan=4>' + milestone['milestone name'] + ' (cmd = ' + str(milestone['cmd']) + ')</td>\n')
-        html_file.write('</tr>\n')
-        form_activity_layout(html_file, milestone['activities'])
-    html_file.write('</table>\n')
-    html_file.write(GridHTMLPieces.tail)
-    html_file.close()
-'''
-
-def is_enrichment_remedial_pair(current_sequence, next_sequence):
-    return ((current_sequence[0].lower().startswith('enrichment')) and
-            (next_sequence[0].lower().startswith('remedial'))) \
-            or \
-            ((current_sequence[0].lower().startswith('remedial')) and
-             (next_sequence[0].lower().startswith('enrichment')))
-
-def sequence_break(current_sequence, next_sequence):
+def sequence_break(current_activity, next_activity):
     sequence_is_broken = True
+    current_sequence = current_activity['sequence']
+    next_sequence = next_activity['sequence']
     if (len(current_sequence) > 2) and (len(next_sequence) > 2):
         if (current_sequence[0] == next_sequence[0]) and (current_sequence[1] == next_sequence[1]):
             sequence_is_broken = False
-    elif is_enrichment_remedial_pair(current_sequence, next_sequence):
+    elif is_enrichment_remedial_pair(current_activity, next_activity):
         sequence_is_broken= False
     return sequence_is_broken
 
@@ -77,7 +47,7 @@ def get_grid_column(grid, start_activity_index):
     next_activity_index = current_activity_index + 1
     grid_column = [grid[current_activity_index]]
     while next_activity_index < len(grid):
-        if not sequence_break(grid[current_activity_index]['sequence'], grid[next_activity_index]['sequence']):
+        if not sequence_break(grid[current_activity_index], grid[next_activity_index]):
             grid_column.append(grid[next_activity_index])
             current_activity_index = next_activity_index
             next_activity_index = current_activity_index + 1
@@ -136,7 +106,7 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                                                 activities[row]['Display name'], activity_folder,
                                                 activities[row]['Activity logo'], copied_folders)
                     if len(copied_folders) == 0:
-                        print('Activity ' + activity_folder + ' not found')
+                        print(str(activities[row]['sequence']) + ' activity ' + activity_folder + ' not found')
 
                     html_file.write('<td rowspan="' + str(row_span) +
                                     '" onclick="' + android_call + '(\'' + activity_folder + '\');">\n')
@@ -195,7 +165,7 @@ def write_chapter_row(chapterselector_file, chapter):
     chapterselector_file.write('<td class="chapter_cell" style="width:2cm; text-align:center;">\n')
     chapterselector_file.write('<img id=' + chapter['chapter_name'] + '.status src="chapter_pending.png" onclick="set_active_chapter(\'' + chapter['chapter_name'] + '\');" alt="Pending" style="max-width:1.5cm">')
     chapterselector_file.write('</td>\n')
-    chapterselector_file.write('<td class="chapter_cell" style="width:8cm;">\n')
+    chapterselector_file.write('<td class="chapter_icon">\n')
     chapterselector_file.write('<a href="' + chapter['chapter_name'] + '/index.html">\n')
     chapterselector_file.write('<figure><img src="chapter_icon.png" alt="' + chapter['chapter_name'] + '">\n')
     chapterselector_file.write('<figcaption>' + chapter['chapter_name'] + '</figcaption></figure></a>\n')

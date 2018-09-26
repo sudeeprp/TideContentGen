@@ -189,6 +189,5 @@ class ActivityWriter:
         self.write_content_start(html_file)
         self.write_instruction(html_file, layout)
         self.write_content_holder(html_file)
-        #self.write_content_rows(html_file, layout['images.layout'])
         self.write_content_end(html_file)
         self.close_html(html_file)

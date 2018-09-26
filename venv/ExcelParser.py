@@ -5,17 +5,21 @@ import re
 class Sheet:
     def __init__(self, wsheet):
         self.wsheet = wsheet
+
     def __getitem__(self, item):
-        return self.wsheet[item].value
+        cell_value = self.wsheet[item].value
+        if cell_value is not None:
+            cell_value = str(self.wsheet[item].value).strip()
+        return cell_value
 
 
-def map_headings(ws, heading_row=1, start_col = 'A'):
+def map_headings(ws, heading_row=1, start_col='A'):
     excel_col_map = {}
     cur_column = start_col
     head_row = str(heading_row)
     col_ord = ord(cur_column)
-    while ws[cur_column+head_row] is not None and ws[cur_column+head_row] != "" and cur_column != 'Z':
-        excel_col_map[ws[cur_column+head_row]] = chr(col_ord)
+    while ws[cur_column + head_row] is not None and ws[cur_column + head_row] != "" and cur_column != 'Z':
+        excel_col_map[ws[cur_column + head_row]] = chr(col_ord)
         col_ord += 1
         cur_column = chr(col_ord)
     if cur_column == 'Z':
@@ -37,7 +41,7 @@ def scan_row_range(ws, col_name, excel_col_map, start_row, limit_row):
 
 def collect_screen(ws, excel_col_map, screen_rows):
     screen = []
-    for row_number in range(screen_rows['start'], screen_rows['end']+1):
+    for row_number in range(screen_rows['start'], screen_rows['end'] + 1):
         row_layout = []
         for column_number in ['1', '2', '3']:
             picture_col = 'images col' + column_number
@@ -49,7 +53,7 @@ def collect_screen(ws, excel_col_map, screen_rows):
                 cell_value = cell_value.strip()
                 picture_desc = {}
                 if cell_value.lower().endswith('.png') or cell_value.lower().endswith('.jpg') or \
-                                           cell_value.lower().endswith('.jpeg'):
+                        cell_value.lower().endswith('.jpeg'):
                     picture_desc['image'] = cell_value
                 elif cell_value.startswith('|'):
                     picture_desc['merge_above'] = 1
@@ -59,13 +63,13 @@ def collect_screen(ws, excel_col_map, screen_rows):
                 if prior == None: prior = ''
                 picture_desc['after'] = prior.strip()
                 row_layout.append(picture_desc)
-            #if you want to specify style: add more columns and use re.findall(r'(\w+=".+?")
+            # if you want to specify style: add more columns and use re.findall(r'(\w+=".+?")
         screen.append(row_layout)
     return screen
 
 
 def collect_activity(ws, excel_col_map, activity_rows):
-    #While generating activities, the name in the excel will not have 'Tab 2' and so on.
+    # While generating activities, the name in the excel will not have 'Tab 2' and so on.
     activity = \
         {'Activity Identifier': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
          'Activity folder': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
@@ -111,24 +115,60 @@ def all_attributes_ok(activity_attributes):
 
 
 def row_is_blank(ws, row_number):
-    row_with_values = sum(ws.wsheet.cell(row=row_number,column=i).value is not None for i in range(1,26))
+    row_with_values = sum(ws.wsheet.cell(row=row_number, column=i).value is not None for i in range(1, 26))
     if row_with_values == 0:
         return True
     else:
         return False
 
-#Excel columns - these need to be the same in every milestone sheet!
+
+# Excel columns - these need to be the same in every milestone sheet!
 activity_sequence_col_head = '#'
 activity_logo_col_head = 'Logo'
 activity_numid_col_head = 'numid'
 head_row = 3
 start_col = 'B'
+running_numid = {}
+
 
 def activity_id_to_folder(logo, numid):
-    if logo.startswith('Tab'):
-        logo = 'Tab'
+    if logo.lower().startswith('tab'):
+        logo = 'tab'
     activity_folder = logo + "_" + str(numid)
     return activity_folder
+
+def repair_keywords(input):
+    output = input.lower().replace('remedial', 'reinforcement')
+    return output
+
+def get_qualifier_and_logo(ws, curriculum_col_map, current_row):
+    qualifiers = ['enrichment', 'reinforcement']
+    sequence_str = ws[curriculum_col_map[activity_sequence_col_head] + str(current_row)].lower()
+    logo_str = ws[curriculum_col_map[activity_logo_col_head] + str(current_row)].lower()
+
+    found_qualifier = ''
+    sequence_str = repair_keywords(sequence_str)
+    extracted_logo = repair_keywords(logo_str)
+    for qualifier in qualifiers:
+        if extracted_logo.find(qualifier) != -1:
+            extracted_logo = extracted_logo.replace(qualifier, '')
+        if sequence_str.find(qualifier) != -1 or logo_str.find(qualifier) != -1:
+            found_qualifier = qualifier
+            break
+    extracted_logo = extracted_logo.strip()
+    return found_qualifier, extracted_logo
+
+def get_numid(ws, curriculum_col_map, current_row, logo):
+    if activity_numid_col_head in curriculum_col_map:
+        numid = ws[curriculum_col_map[activity_numid_col_head] + str(current_row)]
+    else:
+        if logo in running_numid:
+            running_numid[logo] += 1
+        else:
+            running_numid[logo] = 1
+        numid = running_numid[logo]
+    return numid
+
 
 def forge_grid(worksheet):
     ws = Sheet(worksheet)
@@ -136,27 +176,27 @@ def forge_grid(worksheet):
     current_row = head_row + 1
     grid = []
     blank_rows = 0
+    prev_activity = ''
     while current_row <= ws.wsheet.max_row:
         activity = ws[curriculum_col_map[activity_sequence_col_head] + str(current_row)]
         if activity is None or activity == "":
             break
         activity = str(activity)
         is_mandatory = ws.wsheet[curriculum_col_map[activity_sequence_col_head] + str(current_row)].font.bold
-        if activity is not None:
+        if activity is not None and activity != prev_activity:
             sequence = re.findall(r'\d+', activity)
-            if len(sequence) < 1:
-                sequence = [activity]
-            logo = ws[curriculum_col_map[activity_logo_col_head] + str(current_row)]
-            numid = ws[curriculum_col_map[activity_numid_col_head] + str(current_row)]
+            qualifier, logo = get_qualifier_and_logo(ws, curriculum_col_map, current_row)
+            numid = get_numid(ws, curriculum_col_map, current_row, logo)
             activity_id = logo + '_' + str(numid)
             activity_attributes = \
                 {'sequence': sequence,
+                 'qualifier': qualifier,
                  'Activity logo': logo,
                  'Activity Identifier': activity_id,
                  'Activity folder': activity_id_to_folder(logo, numid),
                  'Display name': str(numid),
                  'mandatory': is_mandatory
-                }
+                 }
             grid.append(activity_attributes)
             if not all_attributes_ok(activity_attributes):
                 print('Missing cells at ' + activity_id + ' (near row ' + str(current_row) + ')')
@@ -169,7 +209,9 @@ def forge_grid(worksheet):
             if blank_rows > 20:
                 break
         current_row += 1
+        prev_activity = activity
     return grid
+
 
 def pics_sounds_map(excel_file):
     w = load_workbook(excel_file, data_only=True)
