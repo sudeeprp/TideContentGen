@@ -6,7 +6,9 @@ import os
 import json
 from urllib.parse import quote
 
-grid_images_to_copy = ['map_paper.png', 'link1to1.png', 'link1to2.png', 'link1to3.png', 'link2to1.png', 'link3to1.png']
+grid_images_to_copy = ['map_paper.png', 'link1to1.png',
+                       'link1to2.png', 'link1to3.png', 'link1to4.png',
+                       'link2to1.png', 'link3to1.png', 'link4to1.png']
 chapter_images_to_copy = ['chapter_icon.png', 'chapter_current.png', 'chapter_done.png', 'chapter_inprogress.png', 'chapter_pending.png']
 
 def copy_files(images_to_copy, from_dir, to_dir):

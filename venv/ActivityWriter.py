@@ -6,7 +6,7 @@ import pandas as pd
 from urllib.parse import quote
 
 common_files = ['bell-sheet0.png', 'img_speakerbtn-sheet0.png', 'nextsheetsheet-sheet1.png',
-                'backarrow1-sheet0.png']
+                'backarrow1-sheet0.png', 'done-sheet0.png', 'clap1.ogg']
 
 def copy_common_resources(source_dir, destination_dir):
     for file in common_files:
@@ -125,10 +125,8 @@ class ActivityWriter:
         html_file.write('</table>\n')
 
     def write_content_end(self, html_file):
-        html_file.write('<a onclick="Android.activityResult(\'Done!\')">')
-        html_file.write(image_html_line('bell-sheet0.png', 'overall_done_hidden'))
-        html_file.write('</a>')
         html_file.write(ActivityHTMLPieces.next_prev)
+        html_file.write(ActivityHTMLPieces.overall_done)
 
     def close_html(self, html_file):
         html_file.write('</body>\n')

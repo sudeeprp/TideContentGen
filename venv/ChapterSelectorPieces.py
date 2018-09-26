@@ -81,7 +81,12 @@ function refresh_students() {
     }
     console.log("done with refresh_students. i is " + i);
 }
+function refresh_heading() {
+    document.getElementById('current_grade').innerHTML = Android.getCurrentGrade();
+    document.getElementById('current_subject').innerHTML = Android.getCurrentSubject();
+}
 function refresh_screen() {
+    refresh_heading();
     refresh_status();
     refresh_students();
 }
@@ -93,6 +98,7 @@ function set_active_chapter(chapter) {
 '''
 body_table_start='''\
 <body onload="Android.selectorEntered(); refresh_screen();">
+<h1><span id=current_grade></span>&nbsp;&nbsp;&nbsp;<span id=current_subject></span></h1>
 <table class="chapter_table">
 '''
 body_table_end='''\

@@ -46,24 +46,45 @@ user-select: none;
     border: 3px solid green;
     box-shadow: 5px 5px 3px grey;
 }
-.overall_done_hidden, .overall_done_visible, .next_screen_hidden, .next_screen_visible, .prev_screen_hidden, .prev_screen_visible {
+.next_screen_hidden, .next_screen_visible, .prev_screen_hidden, .prev_screen_visible {
     margin-top: 0px;
     margin-left: 0px;
     margin-right: 0px;
     margin-bottom: 0px;
     position: fixed;
 }
-.overall_done_hidden, .overall_done_visible, .next_screen_hidden, .next_screen_visible {
+.next_screen_hidden, .next_screen_visible {
     right: 0; bottom: 0;
 }
 .prev_screen_hidden, .prev_screen_visible {
     left: 0; bottom: 0;
 }
-.overall_done_hidden, .next_screen_hidden, .prev_screen_hidden {
+.next_screen_hidden, .prev_screen_hidden {
     visibility: hidden;
 }
-.overall_done_visible, .next_screen_visible, prev_screen_visible {
+.next_screen_visible, prev_screen_visible {
     visibility: visible;
+}
+.overall_done_hidden {
+    visibility: none;
+}
+.overall_done_visible {
+    position: absolute;
+    top: 40vh;
+    left: 40vw;
+    height: 40vh;
+    visibility: visible;
+    transition: transform 1s;
+    transform: scale(1.5);
+    z-index: 200;
+}
+.overall_block {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 100;
 }
 </style>
 '''
@@ -74,13 +95,19 @@ tail = '''\
 
 content_holder = '''\
 <div id='screen'>
-<p>No content.</p>
+<p>Non.</p>
 </div>
 '''
 
 next_prev = '''\
 <a onclick="next_screen()"><img id=next_button class="next_screen_hidden" src="nextsheetsheet-sheet1.png"></a>
 <a onclick="prev_screen()"><img id=prev_button class="prev_screen_hidden" src="backarrow1-sheet0.png"></a>
+'''
+
+overall_done = '''\
+<img id=block.id class="overall_done_hidden" src="done-sheet0.png" alt="done">
+<img id=bell-sheet0.png.id class="overall_done_hidden"  src="bell-sheet0.png" alt="bell-sheet0.png">
+<audio id=clap1.id> <source src="clap1.ogg" type="audio/ogg"></audio>
 '''
 
 script_to_play_and_mark = '''\
@@ -100,8 +127,14 @@ function refresh_next(all_done) {
             document.getElementById("next_button").setAttribute("class", "next_screen_visible");
             document.getElementById("bell-sheet0.png.id").setAttribute("class", "overall_done_hidden");
         } else {
+            document.getElementById("block.id").setAttribute("class", "overall_block");
             document.getElementById("bell-sheet0.png.id").setAttribute("class", "overall_done_visible");
             document.getElementById("next_button").setAttribute("class", "next_screen_hidden");
+            final_audio = document.getElementById("clap1.id");
+            final_audio.play();
+            final_audio.onended = function() {
+                Android.activityResult('Done!');
+            };
         }
     }
     else {
