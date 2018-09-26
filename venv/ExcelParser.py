@@ -1,6 +1,14 @@
 from openpyxl import load_workbook
 import re
 
+# Excel columns - these need to be the same in every milestone sheet!
+activity_sequence_col_head = '#'
+activity_logo_col_head = 'Logo'
+activity_numid_col_head = 'numid'
+head_row = 3
+start_col = 'B'
+running_numid = {}
+
 
 class Sheet:
     def __init__(self, wsheet):
@@ -122,15 +130,6 @@ def row_is_blank(ws, row_number):
         return False
 
 
-# Excel columns - these need to be the same in every milestone sheet!
-activity_sequence_col_head = '#'
-activity_logo_col_head = 'Logo'
-activity_numid_col_head = 'numid'
-head_row = 3
-start_col = 'B'
-running_numid = {}
-
-
 def activity_id_to_folder(logo, numid):
     if logo.lower().startswith('tab'):
         logo = 'tab'
@@ -173,6 +172,9 @@ def get_numid(ws, curriculum_col_map, current_row, logo):
 def forge_grid(worksheet):
     ws = Sheet(worksheet)
     curriculum_col_map = map_headings(ws, heading_row=head_row, start_col=start_col)
+    if activity_sequence_col_head not in curriculum_col_map:
+        print('Ignoring ' + str(worksheet) + ': no # found.')
+        return None
     current_row = head_row + 1
     grid = []
     blank_rows = 0

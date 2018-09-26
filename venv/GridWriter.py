@@ -15,13 +15,17 @@ def copy_files(images_to_copy, from_dir, to_dir):
 
 def copy_activity_folder(activities_dir, activity_identifier, target_dir):
     copied_files = []
+    directories = []
     for file_entry in os.listdir(activities_dir):
-        activity_path = os.path.join(activities_dir, file_entry)
-        if os.path.isdir(activity_path) and \
-                (file_entry == activity_identifier or file_entry.startswith(activity_identifier + '.')):
-            shutil.copytree(activity_path, os.path.join(target_dir, file_entry))
-            copied_files.append(file_entry)
-        elif os.path.isdir(activity_path):
+        if os.path.isdir(os.path.join(activities_dir, file_entry)):
+            directories.append(file_entry)
+    for directory_name in directories:
+        activity_path = os.path.join(activities_dir, directory_name)
+        if directory_name.lower() == activity_identifier or \
+                 directory_name.lower().startswith(activity_identifier + '.'):
+            shutil.copytree(activity_path, os.path.join(target_dir, directory_name))
+            copied_files.append(directory_name)
+        else:
             sub_copied_files = copy_activity_folder(activity_path, activity_identifier, target_dir)
             for file in sub_copied_files:
                 copied_files.append(file)
@@ -35,8 +39,8 @@ def sequence_break(current_activity, next_activity):
     sequence_is_broken = True
     current_sequence = current_activity['sequence']
     next_sequence = next_activity['sequence']
-    if (len(current_sequence) > 2) and (len(next_sequence) > 2):
-        if (current_sequence[0] == next_sequence[0]) and (current_sequence[1] == next_sequence[1]):
+    if (len(current_sequence) > 1) and (len(next_sequence) > 1):
+        if current_sequence[0] == next_sequence[0]:
             sequence_is_broken = False
     elif is_enrichment_remedial_pair(current_activity, next_activity):
         sequence_is_broken= False
@@ -94,12 +98,16 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
         if table_row in filled_rows_in_lcm:
             for i, activities in enumerate(grid_columns):
                 write_pre_activity_links(html_file, lcm_of_max_rows, table_row, grid_columns, i)
+                if len(activities) > max_rows:
+                    print("ERROR: too much parallel: " + str(activities))
                 row_span = lcm_of_max_rows//len(activities)
                 if table_row % row_span == 0:
                     row = table_row // row_span
                     activity_folder = activities[row]['Activity folder']
                     android_call = 'Android.startActivity'
-                    copied_folders = copy_activity_folder(activities_dir, activity_folder, os.path.dirname(html_file.name))
+                    copied_folders = 0
+                    if os.path.isdir(activities_dir):
+                        copied_folders = copy_activity_folder(activities_dir, activity_folder, os.path.dirname(html_file.name))
                     if len(copied_folders) > 1:
                         android_call = 'Android.subActivity'
                         create_sub_activity_set(raw_material_dir, os.path.dirname(html_file.name),

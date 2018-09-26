@@ -19,7 +19,7 @@ def make_clean_dir(output_dir):
     print('Look in ' + output_dir)
     for i in range(2):
         try:
-            os.mkdir(output_dir)
+            os.makedirs(output_dir)
             break
         except OSError as os_error:
             if os_error.errno != errno.EACCES:
@@ -44,8 +44,9 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
     chapter_activities = []
     for sheet_name in w.sheetnames:
         grid = ExcelParser.forge_grid(w[sheet_name])
-        chapter_activities.append({'chapter_name': sheet_name, 'activities': make_activity_characteristics(grid)})
-        GridWriter.forge_milestone_grid(grid, sheet_name, raw_material_dir, activities_dir, os.path.join(grid_output_dir, sheet_name))
+        if grid is not None:
+            chapter_activities.append({'chapter_name': sheet_name, 'activities': make_activity_characteristics(grid)})
+            GridWriter.forge_milestone_grid(grid, sheet_name, raw_material_dir, activities_dir, os.path.join(grid_output_dir, sheet_name))
     GridWriter.write_chapter_activities(chapter_activities, raw_material_dir, grid_output_dir)
     write_content_description(output_parent)
 
