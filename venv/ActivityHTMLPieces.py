@@ -6,6 +6,10 @@ begin_head = '''\
 <title>Learn</title>
 
 <style>
+@font-face {
+font-family: my_drwatson;
+src: url(MyDearWatson-Regular.woff);
+}
 html {
 height: 100%;
 }
@@ -85,6 +89,13 @@ user-select: none;
     height: 100vh;
     width: 100vw;
     z-index: 100;
+}
+.title_text {
+    text-align: center;
+    font-family: my_drwatson;
+    font-size: 1em;
+    margin-top: 2px;
+    margin-bottom: 0px;
 }
 </style>
 '''

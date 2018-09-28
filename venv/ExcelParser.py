@@ -82,6 +82,7 @@ def collect_activity(ws, excel_col_map, activity_rows):
         {'Activity Identifier': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
          'Activity folder': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
          'instruction.sound': ws[excel_col_map['instruction.sound'] + str(activity_rows['start'])].strip(),
+         'title': ws[excel_col_map['title'] + str(activity_rows['start'])],
          'images.layout': []}
     current_row = activity_rows['start']
     while current_row <= activity_rows['end']:

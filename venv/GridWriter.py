@@ -107,7 +107,7 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                     row = table_row // row_span
                     activity_folder = activities[row]['Activity folder']
                     android_call = 'Android.startActivity'
-                    copied_folders = 0
+                    copied_folders = []
                     if os.path.isdir(activities_dir):
                         copied_folders = copy_activity_folder(activities_dir, activity_folder, os.path.dirname(html_file.name))
                     if len(copied_folders) > 1:

@@ -6,7 +6,7 @@ import pandas as pd
 from urllib.parse import quote
 
 common_files = ['bell-sheet0.png', 'img_speakerbtn-sheet0.png', 'nextsheetsheet-sheet1.png',
-                'backarrow1-sheet0.png', 'done-sheet0.png', 'clap1.ogg']
+                'backarrow1-sheet0.png', 'done-sheet0.png', 'clap1.ogg', 'MyDearWatson-Regular.woff']
 
 def copy_common_resources(source_dir, destination_dir):
     for file in common_files:
@@ -98,7 +98,7 @@ class ActivityWriter:
                 if image_layout is not None:
                     if 'image' in image_layout:
                         picture = image_layout['image']
-                        attr = 'style="max-height:' + str(90 // rows * rowspan) + 'vh;max-width:' + \
+                        attr = 'style="max-height:' + str(80 // rows * rowspan) + 'vh;max-width:' + \
                                     str(90 // cols) + 'vw;" '
                         html_line = image_html_line
                         shutil.copy(picture, self.activity_dir + '/' + picture)
@@ -179,6 +179,12 @@ class ActivityWriter:
         html_file.write(ActivityHTMLPieces.script_to_refresh)
         html_file.write('</script>\n')
 
+    def write_title(self, html_file, layout):
+        html_file.write('<p class=title_text>')
+        html_title = layout['title'].encode('ascii', 'xmlcharrefreplace')
+        html_file.write(html_title.decode("utf-8"))
+        html_file.write('</p>\n')
+
     def write_tap_listen(self, activity_dir, layout):
         html_file = self.create_html(activity_dir)
         html_file.write(ActivityHTMLPieces.begin_head)
@@ -186,6 +192,7 @@ class ActivityWriter:
         html_file.write('</head>\n')
         self.write_content_start(html_file)
         self.write_instruction(html_file, layout)
+        self.write_title(html_file, layout)
         self.write_content_holder(html_file)
         self.write_content_end(html_file)
         self.close_html(html_file)
