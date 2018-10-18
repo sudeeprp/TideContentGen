@@ -33,6 +33,12 @@ def copy_activity_folder(activities_dir, activity_identifier, target_dir):
                 copied_files.append(file)
     return copied_files
 
+def html_encoded_name(name):
+    return name.encode('ascii', 'xmlcharrefreplace').decode("utf-8")
+
+def html_encoded_id(name):
+    return quote(name)
+
 def is_enrichment_remedial_pair(current_activity, next_activity):
     return (current_activity['qualifier'] == 'enrichment' and next_activity['qualifier'] == 'reinforcement') or \
             (current_activity['qualifier'] == 'reinforcement' and next_activity['qualifier'] == 'enrichment')
@@ -53,7 +59,8 @@ def get_grid_column(grid, start_activity_index):
     next_activity_index = current_activity_index + 1
     grid_column = [grid[current_activity_index]]
     while next_activity_index < len(grid):
-        if not sequence_break(grid[current_activity_index], grid[next_activity_index]):
+        #if not sequence_break(grid[current_activity_index], grid[next_activity_index]):
+        if grid[current_activity_index]['withnext']:
             grid_column.append(grid[next_activity_index])
             current_activity_index = next_activity_index
             next_activity_index = current_activity_index + 1
@@ -92,6 +99,7 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
     max_rows = 4
     lcm_of_max_rows = 12
     filled_rows_in_lcm = []
+    activities = []
     for column in grid_columns:
         for i in range(0, lcm_of_max_rows, lcm_of_max_rows//len(column)):
             filled_rows_in_lcm.append(i)
@@ -125,7 +133,8 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                     html_file.write('</td>\n')
                 write_post_activity_links(html_file, lcm_of_max_rows, table_row, grid_columns, i)
         html_file.write('</tr>\n')
-    if max([len(activities) for activities in grid_columns]) > max_rows:
+    if len(activities) > 0 and \
+            max([len(activities) for activities in grid_columns]) > max_rows:
         print('WARNING: number of parallel activities exceeds ' + str(max_rows))
 
 def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, activity_folder, logo, copied_files):
@@ -146,12 +155,12 @@ def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, a
     sub_activity_html.write(SetOfSubPieces.tail)
     sub_activity_html.close()
 
-def forge_milestone_grid(grid, chapter_name, raw_material_dir, activities_dir, output_dir):
+def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir, output_dir):
     print('Making grid in ' + output_dir)
     os.mkdir(output_dir)
     html_file = open(os.path.join(output_dir, 'index.html'), 'w')
     html_file.write(GridHTMLPieces.begin_head)
-    html_file.write('<body class=nomargins onload="Android.chapterEntered(\'' + chapter_name + '\');">\n')
+    html_file.write('<body class=nomargins onload="Android.chapterEntered(\'' + chapter_id + '\');">\n')
     html_file.write('<h1  class=chapterhead><span onclick="Android.chapterSelector();">&nbsp;&#x21CB;&nbsp;&nbsp;</span>' +
                     chapter_name + '</h1>\n')
     html_file.write('<div style="overflow:auto; margin-top: 80px;">\n')
@@ -171,22 +180,25 @@ def forge_milestone_grid(grid, chapter_name, raw_material_dir, activities_dir, o
     copy_files(grid_images_to_copy, raw_material_dir, output_dir)
 
 def write_chapter_row(chapterselector_file, chapter):
+    chapter_name = html_encoded_name(chapter['chapter_name'])
+    chapter_id = chapter['chapter_id']
     chapterselector_file.write('<tr>\n')
     chapterselector_file.write('<td class="chapter_cell" style="width:2cm; text-align:center;">\n')
-    chapterselector_file.write('<img id=' + chapter['chapter_name'] + '.status src="chapter_pending.png" onclick="set_active_chapter(\'' + chapter['chapter_name'] + '\');" alt="Pending" style="max-width:1.5cm">')
+    chapterselector_file.write('<img id=' + chapter_id + '.status src="chapter_pending.png" ' +
+                               'onclick="set_active_chapter(\'' + chapter_id + '\');" alt="Pending" style="max-width:1.5cm">')
     chapterselector_file.write('</td>\n')
     chapterselector_file.write('<td class="chapter_icon">\n')
-    chapterselector_file.write('<a href="' + chapter['chapter_name'] + '/index.html">\n')
-    chapterselector_file.write('<figure><img src="chapter_icon.png" alt="' + chapter['chapter_name'] + '">\n')
-    chapterselector_file.write('<figcaption>' + chapter['chapter_name'] + '</figcaption></figure></a>\n')
+    chapterselector_file.write('<a href="' + chapter_id + '/index.html">\n')
+    chapterselector_file.write('<figure><img src="chapter_icon.png" alt="' + chapter_name + '">\n')
+    chapterselector_file.write('<figcaption>' + chapter_name + '</figcaption></figure></a>\n')
     chapterselector_file.write('</td>')
     chapterselector_file.write('<td class="chapter_cell" style="height:2.5cm;">\n')
-    chapterselector_file.write('<div id=' + chapter['chapter_name'] + '.students style="overflow:auto;height:100%;white-space:nowrap;"></div>')
+    chapterselector_file.write('<div id=' + chapter_id + '.students style="overflow:auto;height:100%;white-space:nowrap;"></div>')
     chapterselector_file.write('</td>\n')
     chapterselector_file.write('</tr>\n')
 
 def chapter_array_html(chapter_activities):
-    return json.dumps([chapter['chapter_name'] for chapter in chapter_activities])
+    return json.dumps([chapter['chapter_id'] for chapter in chapter_activities])
 
 def write_chapter_activity_characteristics(chapter_activities, output_dir):
     chapter_activity_file = open(os.path.join(output_dir, 'chapter_activities.json'), 'w')

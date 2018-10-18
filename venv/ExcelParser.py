@@ -1,4 +1,5 @@
 from openpyxl import load_workbook
+from openpyxl import styles
 import re
 
 # Excel columns - these need to be the same in every milestone sheet!
@@ -170,6 +171,20 @@ def get_numid(ws, curriculum_col_map, current_row, logo):
     return numid
 
 
+def activity_is_parallel_with_next(worksheet, curriculum_col_map, activity_row):
+    is_parallel_with_next = False
+    colors = styles.colors.COLOR_INDEX
+    activity_bk_color = worksheet[curriculum_col_map[activity_sequence_col_head] +
+                                           str(activity_row)].fill.start_color
+    next_activity_bk_color = worksheet[curriculum_col_map[activity_sequence_col_head] +
+                                                str(activity_row+1)].fill.start_color
+    #current activity-fill should be colored, only then it can be parallel
+    if(activity_bk_color.index != '00000000' and colors[activity_bk_color.index] != '00FFFFFF' and
+            activity_bk_color.index == next_activity_bk_color.index and
+            activity_bk_color.tint == next_activity_bk_color.tint):
+        is_parallel_with_next = True
+    return is_parallel_with_next
+
 def forge_grid(worksheet):
     ws = Sheet(worksheet)
     curriculum_col_map = map_headings(ws, heading_row=head_row, start_col=start_col)
@@ -186,6 +201,7 @@ def forge_grid(worksheet):
             break
         activity = str(activity)
         is_mandatory = ws.wsheet[curriculum_col_map[activity_sequence_col_head] + str(current_row)].font.bold
+        is_with_next = activity_is_parallel_with_next(worksheet, curriculum_col_map, current_row)
         if activity is not None and activity != prev_activity:
             sequence = re.findall(r'\d+', activity)
             qualifier, logo = get_qualifier_and_logo(ws, curriculum_col_map, current_row)
@@ -198,7 +214,8 @@ def forge_grid(worksheet):
                  'Activity Identifier': activity_id,
                  'Activity folder': activity_id_to_folder(logo, numid),
                  'Display name': str(numid),
-                 'mandatory': is_mandatory
+                 'mandatory': is_mandatory,
+                 'withnext': is_with_next
                  }
             grid.append(activity_attributes)
             if not all_attributes_ok(activity_attributes):

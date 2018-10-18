@@ -8,7 +8,7 @@ import time
 from openpyxl import load_workbook
 
 def write_content_description(output_dir):
-    content_description = '{"content_version": "3 compressed"}'
+    content_description = '{"content_version": "4 french"}'
     content_desc_file = open(output_dir + '/content_descriptor.json', 'w')
     content_desc_file.write(content_description)
     content_desc_file.close()
@@ -43,12 +43,22 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
     w = load_workbook(curriculum_excel)
     chapter_activities = []
     for sheet_name in w.sheetnames:
+        chapter_id = sheet_name
+        chapter_name = GridWriter.html_encoded_name(w[sheet_name]['A1'].value)
+        if chapter_name is not None:
+            chapter_name = str(chapter_name).strip()
+        else:
+            chapter_name = chapter_id
         grid = ExcelParser.forge_grid(w[sheet_name])
         if grid is not None:
-            chapter_activities.append({'chapter_name': sheet_name, 'activities': make_activity_characteristics(grid)})
-            GridWriter.forge_milestone_grid(grid, sheet_name, raw_material_dir, activities_dir, os.path.join(grid_output_dir, sheet_name))
+            chapter_activities.append({'chapter_name': chapter_name, 'chapter_id': chapter_id, 'activities': make_activity_characteristics(grid)})
+            GridWriter.forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir, os.path.join(grid_output_dir, chapter_id))
     GridWriter.write_chapter_activities(chapter_activities, raw_material_dir, grid_output_dir)
     write_content_description(output_parent)
+    for dirName, subdirList, fileList in os.walk(output_parent):
+        if dirName.lower().endswith('projectfile'):
+            shutil.rmtree(dirName)
+            print('deleted: %s' % dirName)
 
 if len(sys.argv) == 5:
     generate_grid(curriculum_excel=sys.argv[1],
