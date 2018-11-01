@@ -8,9 +8,18 @@ from urllib.parse import quote
 common_files = ['bell-sheet0.png', 'img_speakerbtn-sheet0.png', 'nextsheetsheet-sheet1.png',
                 'backarrow1-sheet0.png', 'done-sheet0.png', 'clap1.ogg', 'MyDearWatson-Regular.woff']
 
+def continue_copy(source, dest):
+    try:
+        shutil.copy(source, dest)
+    except FileNotFoundError as fe:
+        print(fe)
+        must_continue = input("Stop?")
+        if must_continue.lower() == 'y':
+            raise
+
 def copy_common_resources(source_dir, destination_dir):
     for file in common_files:
-        shutil.copy(os.path.join(source_dir, file), os.path.join(destination_dir, file))
+        continue_copy(os.path.join(source_dir, file), os.path.join(destination_dir, file))
 
 def file2id(filename, id_extension = ''):
     if filename == '':
@@ -30,20 +39,21 @@ class ActivityWriter:
         self.pics_sounds_map = pics_to_sounds
         return
 
-    def create_html(self, activity_dir):
+    def create_html_and_common_resources(self, raw_materials_dir, activity_dir):
         self.activity_dir = activity_dir
         os.makedirs(self.activity_dir, exist_ok=True)
-        copy_common_resources('.', self.activity_dir)
+        copy_common_resources(raw_materials_dir, self.activity_dir)
         html_file = open(os.path.join(self.activity_dir, 'index.html'), "w")
         return html_file
 
     def write_content_start(self, html_file):
         html_file.write('<body class="nomargins" onload="refresh_screen()">\n')
 
-    def write_instruction(self, html_file, layout):
+    def write_instruction(self, raw_materials_dir, html_file, layout):
         instruction_pic = 'img_speakerbtn-sheet0.png'
         instruction_sound = layout['instruction.sound']
-        shutil.copy(instruction_sound, os.path.join(self.activity_dir, instruction_sound))
+        continue_copy(os.path.join(raw_materials_dir, instruction_sound),
+                      os.path.join(self.activity_dir, instruction_sound))
         html_file.write('<audio autoplay id=' + file2id(instruction_sound) + '> <source src="' + quote(instruction_sound) +\
                         '" type="audio/' + instruction_sound.split('.')[-1] + '"></audio>\n')
         html_file.write('<a onclick="document.getElementById(\'' + file2id(instruction_sound) + '\').play();">\n')
@@ -53,7 +63,7 @@ class ActivityWriter:
     def write_content_holder(self, html_file):
         html_file.write(ActivityHTMLPieces.content_holder)
 
-    def audio_source_and_play_instruction(self, imagename, image_ident):
+    def audio_source_and_play_instruction(self, raw_materials_dir, imagename, image_ident):
         audio_source = None
         play_instruction = None
         if imagename in self.pics_sounds_map:
@@ -61,7 +71,7 @@ class ActivityWriter:
             audio_source = '<audio id=' + file2id(audio) + '> <source src="' + quote(audio) + \
                            '" type="audio/' + audio.split('.')[-1] + '"></audio>\n'
             play_instruction = "play_and_mark('" + file2id(audio) + "', '" + image_ident + "');"
-            shutil.copy(audio, os.path.join(self.activity_dir, audio))
+            continue_copy(os.path.join(raw_materials_dir, audio), os.path.join(self.activity_dir, audio))
         else:
             print(imagename + ': no sound')
         return audio_source, play_instruction
@@ -86,7 +96,7 @@ class ActivityWriter:
         cols = df.count(axis=0).astype(bool).sum()
         return rows, cols
 
-    def write_screen_table(self, html_file, images_layout):
+    def write_screen_table(self, raw_materials_dir, html_file, images_layout):
         html_file.write('<table class="content">\n')
         rows, cols = self.get_rows_cols(images_layout)
         for row_number in range(0, len(images_layout)):
@@ -101,7 +111,8 @@ class ActivityWriter:
                         attr = 'style="max-height:' + str(80 // rows * rowspan) + 'vh;max-width:' + \
                                     str(90 // cols) + 'vw;" '
                         html_line = image_html_line
-                        shutil.copy(picture, self.activity_dir + '/' + picture)
+                        continue_copy(os.path.join(raw_materials_dir, picture),
+                                      os.path.join(self.activity_dir, picture))
                     if 'text' in image_layout:
                         picture = image_layout['text']
                         attr = 'style="font-size:500%"'
@@ -111,7 +122,7 @@ class ActivityWriter:
                 html_file.write('<td' + self.rowspan_html(rowspan) + '>\n')
                 if picture is not None:
                     picture_id = file2id(picture, '.id')
-                    audio_source, play_instruction = self.audio_source_and_play_instruction(picture, picture_id)
+                    audio_source, play_instruction = self.audio_source_and_play_instruction(raw_materials_dir, picture, picture_id)
                     if audio_source is not None:
                         html_file.write(audio_source)
                     if play_instruction is not None:
@@ -133,13 +144,13 @@ class ActivityWriter:
         html_file.write(ActivityHTMLPieces.tail)
         html_file.close()
 
-    def write_screens_html_array(self, html_file, layout):
+    def write_screens_html_array(self, raw_materials_dir, html_file, layout):
         is_first_screen = True
         for screen in layout['images.layout']:
             if not is_first_screen:
                 html_file.write(',\n')
             html_file.write('`\n')
-            self.write_screen_table(html_file, screen)
+            self.write_screen_table(raw_materials_dir, html_file, screen)
             html_file.write('`')
             is_first_screen = False
 
@@ -162,14 +173,14 @@ class ActivityWriter:
         s = json.dumps(screen_state)
         html_file.write(s)
 
-    def write_tap_listen_script(self, html_file, layout):
+    def write_tap_listen_script(self, raw_materials_dir, html_file, layout):
         html_file.write('<script>\n')
         html_file.write('var screen_state = ')
         self.write_screen_status(html_file, layout)
         html_file.write(';\n')
         html_file.write('var current_screen = 0;\n')
         html_file.write('var screen_html = [\n')
-        self.write_screens_html_array(html_file, layout)
+        self.write_screens_html_array(raw_materials_dir, html_file, layout)
         html_file.write('\n]\n')
         html_file.write(ActivityHTMLPieces.script_to_play_and_mark)
         html_file.write(ActivityHTMLPieces.script_to_refresh_next_and_prev)
@@ -185,13 +196,13 @@ class ActivityWriter:
         html_file.write(html_title.decode("utf-8"))
         html_file.write('</p>\n')
 
-    def write_tap_listen(self, activity_dir, layout):
-        html_file = self.create_html(activity_dir)
+    def write_tap_listen(self, raw_materials_dir, activity_dir, layout):
+        html_file = self.create_html_and_common_resources(raw_materials_dir, activity_dir)
         html_file.write(ActivityHTMLPieces.begin_head)
-        self.write_tap_listen_script(html_file, layout)
+        self.write_tap_listen_script(raw_materials_dir, html_file, layout)
         html_file.write('</head>\n')
         self.write_content_start(html_file)
-        self.write_instruction(html_file, layout)
+        self.write_instruction(raw_materials_dir, html_file, layout)
         self.write_title(html_file, layout)
         self.write_content_holder(html_file)
         self.write_content_end(html_file)

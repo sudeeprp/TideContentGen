@@ -28,22 +28,24 @@ def make_clean_content_folder(output_dir, excel_filename):
     return content_folder_name
 
 
-def make_activity_in_content_folder(content_folder_name, pics_to_sounds, activity):
+def make_activity_in_content_folder(raw_materials_dir, content_folder_name, pics_to_sounds, activity):
     activity_writer = ActivityWriter.ActivityWriter(pics_to_sounds)
-    activity_writer.write_tap_listen(os.path.join(content_folder_name, activity['Activity folder']), activity)
+    activity_writer.write_tap_listen(raw_materials_dir, os.path.join(content_folder_name, activity['Activity folder']), activity)
 
 
-def parse_excel_and_make_activities(excel_filename, pics_sounds_excel, output_dir):
-    activities = ExcelParser.forge_activities(excel_filename)
-    pics_to_sounds = ExcelParser.pics_sounds_map(pics_sounds_excel)
+def parse_excel_and_make_activities(raw_materials_dir, excel_filename, pics_sounds_excel, output_dir):
+    activities = ExcelParser.forge_activities(os.path.join(raw_materials_dir, excel_filename))
+    pics_to_sounds = ExcelParser.pics_sounds_map(os.path.join(raw_materials_dir, pics_sounds_excel))
 
     content_folder_name = make_clean_content_folder(output_dir, excel_filename)
     for activity in activities:
-        make_activity_in_content_folder(content_folder_name, pics_to_sounds, activity)
+        make_activity_in_content_folder(raw_materials_dir, content_folder_name, pics_to_sounds, activity)
         Compressor.compress_path(content_folder_name)
 
 
-if len(sys.argv) == 4:
-    parse_excel_and_make_activities(excel_filename=sys.argv[1], pics_sounds_excel=sys.argv[2], output_dir=sys.argv[3])
+if len(sys.argv) == 5:
+    parse_excel_and_make_activities(raw_materials_dir=sys.argv[1], excel_filename=sys.argv[2],
+                                    pics_sounds_excel=sys.argv[3], output_dir=sys.argv[4])
 else:
-    print("Activity creator\nUsage: " + sys.argv[0] + " <excel filename> <pics and sounds excel> <output dir>\n")
+    print("Activity creator\nUsage: " + sys.argv[0] +
+          " <raw materials dir> <excel filename> <pics and sounds excel> <output dir>\n")
