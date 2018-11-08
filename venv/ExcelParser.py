@@ -4,7 +4,7 @@ import re
 
 # Excel columns - these need to be the same in every milestone sheet!
 activity_sequence_col_head = '#'
-activity_logo_col_head = 'Logo'
+activity_logo_col_head = 'logo'
 activity_numid_col_head = 'numid'
 head_row = 3
 start_col = 'B'
@@ -28,7 +28,7 @@ def map_headings(ws, heading_row=1, start_col='A'):
     head_row = str(heading_row)
     col_ord = ord(cur_column)
     while ws[cur_column + head_row] is not None and ws[cur_column + head_row] != "" and cur_column != 'Z':
-        excel_col_map[ws[cur_column + head_row]] = chr(col_ord)
+        excel_col_map[ws[cur_column + head_row].lower()] = chr(col_ord)
         col_ord += 1
         cur_column = chr(col_ord)
     if cur_column == 'Z':
