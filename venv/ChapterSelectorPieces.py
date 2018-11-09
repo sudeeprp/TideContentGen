@@ -18,6 +18,37 @@ user-select: none;
     margin-right: 0px;
     margin-bottom: 0px;
 }
+.student_status_pic {
+    max-height: 20px;
+}
+.student_thumbnail {
+    width:100px;
+    height:100px;
+    padding-top:3px;
+    padding-left:3px;
+    padding-bottom:3px;
+}
+.student_figure {
+    display: inline-block;
+    border: 1px solid gray;
+    border-radius: 5px;
+    margin: 2px;
+    max-width: 120px;
+    vertical-align: top;
+}
+.student_figcaption, .chapter_figcaption {
+    text-align: center;
+    font-family: Verdana;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+.student_figcaption {
+    font-size: small;
+    white-space: normal;
+}
+.chapter_figcaption {
+    font-size: medium
+}
 .chapter_table, .chapter_cell, .chapter_icon {
     border-collapse:collapse; border:1px solid #FF00FF;
 }
@@ -32,10 +63,6 @@ user-select: none;
     width:8cm;
     text-align: center;
 }
-figure {
-    display: inline-block;
-    margin: 2px;
-}
 figure img {
     vertical-align: middle;
     display: block;
@@ -43,11 +70,6 @@ figure img {
     margin-right: auto;
     max-height: 64px;
     max-width: 200px;
-}
-figure figcaption {
-    text-align: center;
-    font-family: Verdana;
-    font-size: medium;
 }
 </style>
 '''
@@ -66,8 +88,12 @@ function set_students_in_chapter(chapter, students_in_chapter) {
     var students_html = ''
     var numStudents = students_in_chapter.length;
     for(var i = 0; i < numStudents; i++) {
-        students_html += "<figure><img style='width:100px;height:100px;padding-top:3px;padding-left:3px;padding-bottom:3px;' src='data:image/jpeg;base64, " + 
-                students_in_chapter[i].thumbnail + "' /><figcaption>" + students_in_chapter[i].name + "</figcaption></figure>";
+        students_html += "<figure class=student_figure><img class=student_thumbnail src='data:image/jpeg;base64, " +
+                students_in_chapter[i].thumbnail + "'/>";
+        if('status' in students_in_chapter[i]) {
+            students_html += "<img class=student_status_pic src='chapter_" + students_in_chapter[i].status + ".png'/>";
+        }
+        students_html += "<figcaption class=student_figcaption>" + students_in_chapter[i].name + "</figcaption></figure>";
     }
     document.getElementById(chapter + '.students').innerHTML = students_html;
 }

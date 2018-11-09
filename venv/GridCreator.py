@@ -33,7 +33,7 @@ def make_clean_dir(output_dir):
 def make_activity_characteristics(grid):
     activity_map = {}
     for activity in grid:
-        activity_map[activity['Activity Identifier']] = {'mandatory': activity['mandatory']}
+        activity_map[activity['activity identifier']] = {'mandatory': activity['mandatory']}
     return activity_map
 
 def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_parent):

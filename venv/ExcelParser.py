@@ -80,14 +80,14 @@ def collect_screen(ws, excel_col_map, screen_rows):
 def collect_activity(ws, excel_col_map, activity_rows):
     # While generating activities, the name in the excel will not have 'Tab 2' and so on.
     activity = \
-        {'Activity Identifier': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
-         'Activity folder': ws[excel_col_map['Activity Identifier'] + str(activity_rows['start'])],
+        {'activity identifier': ws[excel_col_map['activity identifier'] + str(activity_rows['start'])],
+         'activity folder': ws[excel_col_map['activity identifier'] + str(activity_rows['start'])],
          'instruction.sound': ws[excel_col_map['instruction.sound'] + str(activity_rows['start'])].strip(),
          'title': ws[excel_col_map['title'] + str(activity_rows['start'])],
          'images.layout': []}
     current_row = activity_rows['start']
     while current_row <= activity_rows['end']:
-        screen_number, screen_rows = scan_row_range(ws, 'Screen', excel_col_map, current_row, activity_rows['end'])
+        screen_number, screen_rows = scan_row_range(ws, 'screen', excel_col_map, current_row, activity_rows['end'])
         if screen_number is None:
             screen_number = '1'
         screen = collect_screen(ws, excel_col_map, screen_rows)
@@ -101,7 +101,7 @@ def collect_activities(ws, excel_col_map, row_range):
     current_row = row_range['start']
     while current_row <= row_range['end']:
         activity_ident, activity_rows = \
-            scan_row_range(ws, 'Activity Identifier', excel_col_map, current_row, row_range['end'])
+            scan_row_range(ws, 'activity identifier', excel_col_map, current_row, row_range['end'])
         if activity_ident is not None:
             print(activity_ident)
             activities.append(collect_activity(ws, excel_col_map, activity_rows))
@@ -210,10 +210,10 @@ def forge_grid(worksheet):
             activity_attributes = \
                 {'sequence': sequence,
                  'qualifier': qualifier,
-                 'Activity logo': logo,
-                 'Activity Identifier': activity_id,
-                 'Activity folder': activity_id_to_folder(logo, numid),
-                 'Display name': str(numid),
+                 'activity logo': logo,
+                 'activity identifier': activity_id,
+                 'activity folder': activity_id_to_folder(logo, numid),
+                 'display name': str(numid),
                  'mandatory': is_mandatory,
                  'withnext': is_with_next
                  }
@@ -241,6 +241,6 @@ def pics_sounds_map(excel_file):
     pics_to_sounds = {}
 
     for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
-        pics_to_sounds[ws[excel_col_map['Picture'] + str(current_row)].strip()] = \
-            ws[excel_col_map['Sound'] + str(current_row)].strip()
+        pics_to_sounds[ws[excel_col_map['picture'] + str(current_row)].strip()] = \
+            ws[excel_col_map['sound'] + str(current_row)].strip()
     return pics_to_sounds

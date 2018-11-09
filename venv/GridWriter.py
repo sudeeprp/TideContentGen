@@ -9,7 +9,8 @@ from urllib.parse import quote
 grid_images_to_copy = ['map_paper.png', 'link1to1.png',
                        'link1to2.png', 'link1to3.png', 'link1to4.png',
                        'link2to1.png', 'link3to1.png', 'link4to1.png']
-chapter_images_to_copy = ['chapter_icon.png', 'chapter_current.png', 'chapter_done.png', 'chapter_inprogress.png', 'chapter_pending.png']
+chapter_images_to_copy = ['chapter_icon.png', 'chapter_current.png', 'chapter_none.png', 'chapter_assessment_ready.png',
+                          'chapter_done.png', 'chapter_inprogress.png', 'chapter_pending.png']
 
 def copy_files(images_to_copy, from_dir, to_dir):
     for image_filename in images_to_copy:
@@ -113,7 +114,7 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                 row_span = lcm_of_max_rows//len(activities)
                 if table_row % row_span == 0:
                     row = table_row // row_span
-                    activity_folder = activities[row]['Activity folder']
+                    activity_folder = activities[row]['activity folder']
                     android_call = 'Android.startActivity'
                     copied_folders = []
                     if os.path.isdir(activities_dir):
@@ -121,15 +122,15 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                     if len(copied_folders) > 1:
                         android_call = 'Android.subActivity'
                         create_sub_activity_set(raw_material_dir, os.path.dirname(html_file.name),
-                                                activities[row]['Display name'], activity_folder,
-                                                activities[row]['Activity logo'], copied_folders)
+                                                activities[row]['display name'], activity_folder,
+                                                activities[row]['activity logo'], copied_folders)
                     if len(copied_folders) == 0:
                         print(str(activities[row]['sequence']) + ' activity ' + activity_folder + ' not found')
 
                     html_file.write('<td rowspan="' + str(row_span) +
                                     '" onclick="' + android_call + '(\'' + activity_folder + '\');">\n')
-                    write_image_html(html_file, activities[row]['Activity logo'],
-                                     activities[row]['Display name'], raw_material_dir)
+                    write_image_html(html_file, activities[row]['activity logo'],
+                                     activities[row]['display name'], raw_material_dir)
                     html_file.write('</td>\n')
                 write_post_activity_links(html_file, lcm_of_max_rows, table_row, grid_columns, i)
         html_file.write('</tr>\n')
@@ -190,9 +191,9 @@ def write_chapter_row(chapterselector_file, chapter):
     chapterselector_file.write('<td class="chapter_icon">\n')
     chapterselector_file.write('<a href="' + chapter_id + '/index.html">\n')
     chapterselector_file.write('<figure><img src="chapter_icon.png" alt="' + chapter_name + '">\n')
-    chapterselector_file.write('<figcaption>' + chapter_name + '</figcaption></figure></a>\n')
+    chapterselector_file.write('<figcaption class="chapter_figcaption">' + chapter_name + '</figcaption></figure></a>\n')
     chapterselector_file.write('</td>')
-    chapterselector_file.write('<td class="chapter_cell" style="height:2.5cm;">\n')
+    chapterselector_file.write('<td class="chapter_cell">\n')
     chapterselector_file.write('<div id=' + chapter_id + '.students style="overflow:auto;height:100%;white-space:nowrap;"></div>')
     chapterselector_file.write('</td>\n')
     chapterselector_file.write('</tr>\n')

@@ -30,7 +30,7 @@ def make_clean_content_folder(output_dir, excel_filename):
 
 def make_activity_in_content_folder(raw_materials_dir, content_folder_name, pics_to_sounds, activity):
     activity_writer = ActivityWriter.ActivityWriter(pics_to_sounds)
-    activity_writer.write_tap_listen(raw_materials_dir, os.path.join(content_folder_name, activity['Activity folder']), activity)
+    activity_writer.write_tap_listen(raw_materials_dir, os.path.join(content_folder_name, activity['activity folder']), activity)
 
 
 def parse_excel_and_make_activities(raw_materials_dir, excel_filename, pics_sounds_excel, output_dir):
