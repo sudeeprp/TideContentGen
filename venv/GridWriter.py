@@ -16,20 +16,21 @@ def copy_files(images_to_copy, from_dir, to_dir):
     for image_filename in images_to_copy:
         shutil.copyfile(os.path.join(from_dir, image_filename), os.path.join(to_dir, image_filename))
 
-def copy_activity_folder(activities_dir, activity_identifier, target_dir):
+def copy_activity_folder(activities_dir, activity_folder, target_dir):
     copied_files = []
     directories = []
     for file_entry in os.listdir(activities_dir):
         if os.path.isdir(os.path.join(activities_dir, file_entry)):
             directories.append(file_entry)
+    activity_folder_lowercase = activity_folder.lower()
     for directory_name in directories:
         activity_path = os.path.join(activities_dir, directory_name)
-        if directory_name.lower() == activity_identifier or \
-                 directory_name.lower().startswith(activity_identifier + '.'):
+        if directory_name.lower() == activity_folder_lowercase or \
+                 directory_name.lower().startswith(activity_folder_lowercase + '.'):
             shutil.copytree(activity_path, os.path.join(target_dir, directory_name))
             copied_files.append(directory_name)
         else:
-            sub_copied_files = copy_activity_folder(activity_path, activity_identifier, target_dir)
+            sub_copied_files = copy_activity_folder(activity_path, activity_folder, target_dir)
             for file in sub_copied_files:
                 copied_files.append(file)
     return copied_files
@@ -124,9 +125,10 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                         create_sub_activity_set(raw_material_dir, os.path.dirname(html_file.name),
                                                 activities[row]['display name'], activity_folder,
                                                 activities[row]['activity logo'], copied_folders)
+                    ''' TODO: Put this back when cards are there, to check that no cards are missed.
                     if len(copied_folders) == 0:
                         print(str(activities[row]['sequence']) + ' activity ' + activity_folder + ' not found')
-
+                    '''
                     html_file.write('<td rowspan="' + str(row_span) +
                                     '" onclick="' + android_call + '(\'' + activity_folder + '\');">\n')
                     write_image_html(html_file, activities[row]['activity logo'],

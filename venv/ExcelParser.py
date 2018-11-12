@@ -179,7 +179,8 @@ def activity_is_parallel_with_next(worksheet, curriculum_col_map, activity_row):
     next_activity_bk_color = worksheet[curriculum_col_map[activity_sequence_col_head] +
                                                 str(activity_row+1)].fill.start_color
     #current activity-fill should be colored, only then it can be parallel
-    if(activity_bk_color.index != '00000000' and colors[activity_bk_color.index] != '00FFFFFF' and
+    if(activity_bk_color.index != '00000000' and isinstance(activity_bk_color.index, int) and
+            colors[activity_bk_color.index] != '00FFFFFF' and
             activity_bk_color.index == next_activity_bk_color.index and
             activity_bk_color.tint == next_activity_bk_color.tint):
         is_parallel_with_next = True
