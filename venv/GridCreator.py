@@ -8,7 +8,7 @@ import time
 from openpyxl import load_workbook
 
 def write_content_description(output_dir):
-    content_description = '{"content_version": "4 french"}'
+    content_description = '{"content_version": "6 Color"}'
     content_desc_file = open(output_dir + '/content_descriptor.json', 'w')
     content_desc_file.write(content_description)
     content_desc_file.close()
@@ -39,7 +39,6 @@ def make_activity_characteristics(grid):
 def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_parent):
     grid_output_dir = os.path.join(output_parent, os.path.splitext(os.path.basename(curriculum_excel))[0])
     make_clean_dir(grid_output_dir)
-    print("Opening " + curriculum_excel)
     w = load_workbook(curriculum_excel)
     chapter_activities = []
     for sheet_name in w.sheetnames:

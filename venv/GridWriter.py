@@ -75,8 +75,11 @@ def write_image_html(html_file, image_name, caption, raw_material_dir):
     image_filename = image_name + '.png'
     html_file.write('<figure><img src="' + quote(image_filename) + '"' +
                     ' alt="' + image_name + '">\n')
-    shutil.copyfile(os.path.join(raw_material_dir, image_filename),
+    try:
+        shutil.copyfile(os.path.join(raw_material_dir, image_filename),
                     os.path.join(os.path.dirname(html_file.name), image_filename))
+    except FileNotFoundError:
+        print(image_filename + " not found - while copying to " + os.path.dirname(html_file.name))
     html_file.write('<figcaption>' + caption + '</figcaption></figure>\n')
 
 def write_pre_activity_links(html_file, lcm_of_max_rows, row_number, grid_columns, column_index):
@@ -159,7 +162,6 @@ def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, a
     sub_activity_html.close()
 
 def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir, output_dir):
-    print('Making grid in ' + output_dir)
     os.mkdir(output_dir)
     html_file = open(os.path.join(output_dir, 'index.html'), 'w')
     html_file.write(GridHTMLPieces.begin_head)

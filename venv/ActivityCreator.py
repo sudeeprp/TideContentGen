@@ -17,7 +17,7 @@ def make_clean_content_folder(output_dir, excel_filename):
     print('Look in ' + content_folder_name)
     for i in range(2):
         try:
-            os.mkdir(content_folder_name)
+            os.makedirs(content_folder_name, exist_ok=True)
             break
         except OSError as os_error:
             if os_error.errno != errno.EACCES:

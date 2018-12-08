@@ -18,7 +18,10 @@ class Sheet:
     def __getitem__(self, item):
         cell_value = self.wsheet[item].value
         if cell_value is not None:
-            cell_value = str(self.wsheet[item].value).strip()
+            try:
+                cell_value = '{0:g}'.format(cell_value)
+            except ValueError:
+                cell_value = str(self.wsheet[item].value).strip()
         return cell_value
 
 
@@ -171,19 +174,25 @@ def get_numid(ws, curriculum_col_map, current_row, logo):
     return numid
 
 
+def cell_color(worksheet, curriculum_col_map, activity_row):
+    colors = styles.colors.COLOR_INDEX
+    color = worksheet[curriculum_col_map[activity_sequence_col_head] +
+                                           str(activity_row)].fill.start_color
+    if color.index == '00000000':
+        color = None
+    elif isinstance(color.index, int) and colors[color.index] == '00FFFFFF':
+        color = None
+    else:
+        color = str(color.index) + " " + str(color.tint)
+    return color
+
 def activity_is_parallel_with_next(worksheet, curriculum_col_map, activity_row):
     is_parallel_with_next = False
-    colors = styles.colors.COLOR_INDEX
-    activity_bk_color = worksheet[curriculum_col_map[activity_sequence_col_head] +
-                                           str(activity_row)].fill.start_color
-    next_activity_bk_color = worksheet[curriculum_col_map[activity_sequence_col_head] +
-                                                str(activity_row+1)].fill.start_color
-    #current activity-fill should be colored, only then it can be parallel
-    if(activity_bk_color.index != '00000000' and isinstance(activity_bk_color.index, int) and
-            colors[activity_bk_color.index] != '00FFFFFF' and
-            activity_bk_color.index == next_activity_bk_color.index and
-            activity_bk_color.tint == next_activity_bk_color.tint):
-        is_parallel_with_next = True
+    activity_bk_color = cell_color(worksheet, curriculum_col_map, activity_row)
+    if(activity_bk_color is not None):
+        next_activity_bk_color = cell_color(worksheet, curriculum_col_map, activity_row + 1)
+        if activity_bk_color == next_activity_bk_color:
+            is_parallel_with_next = True
     return is_parallel_with_next
 
 def forge_grid(worksheet):
@@ -241,7 +250,11 @@ def pics_sounds_map(excel_file):
     excel_col_map = map_headings(ws, heading_row)
     pics_to_sounds = {}
 
-    for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
-        pics_to_sounds[ws[excel_col_map['picture'] + str(current_row)].strip()] = \
-            ws[excel_col_map['sound'] + str(current_row)].strip()
+    try:
+        for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
+            pics_to_sounds[ws[excel_col_map['picture'] + str(current_row)].strip()] = \
+                ws[excel_col_map['sound'] + str(current_row)].strip()
+    except AttributeError:
+        print("Error at row " + str(current_row))
+        raise
     return pics_to_sounds
