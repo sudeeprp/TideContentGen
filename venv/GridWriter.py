@@ -163,7 +163,8 @@ def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, a
 
 def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir, output_dir):
     os.mkdir(output_dir)
-    html_file = open(os.path.join(output_dir, 'index.html'), 'w')
+    html_filename = os.path.join(output_dir, 'index.html')
+    html_file = open(html_filename, 'w')
     html_file.write(GridHTMLPieces.begin_head)
     html_file.write('<body class=nomargins onload="Android.chapterEntered(\'' + chapter_id + '\');">\n')
     html_file.write('<h1  class=chapterhead><span onclick="Android.chapterSelector();">&nbsp;&#x21CB;&nbsp;&nbsp;</span>' +
@@ -183,6 +184,7 @@ def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activ
     html_file.write(GridHTMLPieces.tail)
     html_file.close()
     copy_files(grid_images_to_copy, raw_material_dir, output_dir)
+    return html_filename
 
 def write_chapter_row(chapterselector_file, chapter):
     chapter_name = html_encoded_name(chapter['chapter_name'])

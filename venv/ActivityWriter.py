@@ -2,20 +2,12 @@ import os
 import shutil
 import json
 import ActivityHTMLPieces
+from continue_copy import continue_copy
 import pandas as pd
 from urllib.parse import quote
 
 common_files = ['bell-sheet0.png', 'img_speakerbtn-sheet0.png', 'nextsheetsheet-sheet1.png',
                 'backarrow1-sheet0.png', 'done-sheet0.png', 'clap1.ogg', 'MyDearWatson-Regular.woff']
-
-def continue_copy(source, dest):
-    try:
-        shutil.copy(source, dest)
-    except FileNotFoundError as fe:
-        print(fe)
-        must_continue = input("Stop?")
-        if must_continue.lower() == 'y':
-            raise
 
 def copy_common_resources(source_dir, destination_dir):
     for file in common_files:

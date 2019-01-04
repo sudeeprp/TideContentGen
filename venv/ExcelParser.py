@@ -176,9 +176,9 @@ def get_numid(ws, curriculum_col_map, current_row, logo):
 
 def cell_color(worksheet, curriculum_col_map, activity_row):
     colors = styles.colors.COLOR_INDEX
-    color = worksheet[curriculum_col_map[activity_sequence_col_head] +
+    color = worksheet[curriculum_col_map[activity_logo_col_head] +
                                            str(activity_row)].fill.start_color
-    if color.index == '00000000':
+    if color.index == '00000000' or color.index == 'FFFFFFFF':
         color = None
     elif isinstance(color.index, int) and colors[color.index] == '00FFFFFF':
         color = None
