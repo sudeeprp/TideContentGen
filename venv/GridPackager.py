@@ -25,7 +25,9 @@ def write_grade_backgrounds(raw_material_dir, output_parent):
 
 
 if len(sys.argv) == 3:
-    write_grade_backgrounds(raw_material_dir=sys.argv[1], output_parent=sys.argv[2])
+    output_dir = sys.argv[2]
+    write_grade_backgrounds(raw_material_dir=sys.argv[1], output_parent=output_dir)
+    write_content_description(output_dir)
     print("Package done.")
 else:
     print('Grid packager\nUsage: ' + sys.argv[0] + ' <raw material dir> <output dir>')

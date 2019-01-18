@@ -136,8 +136,11 @@ def row_is_blank(ws, row_number):
 
 
 def activity_id_to_folder(logo, numid):
+    #if it's in the form of 'tab <digit>', then ignore the digit - that's the number of students
     if logo.lower().startswith('tab'):
-        logo = 'tab'
+        logo_words = logo.split()
+        if len(logo_words) > 1 and logo_words[1].isdigit():
+            logo = 'tab'
     activity_folder = logo + "_" + str(numid)
     return activity_folder
 
@@ -147,11 +150,16 @@ def repair_keywords(input):
 
 def get_qualifier_and_logo(ws, curriculum_col_map, current_row):
     qualifiers = ['enrichment', 'reinforcement']
-    sequence_str = ws[curriculum_col_map[activity_sequence_col_head] + str(current_row)].lower()
+    sequence_str = ''
+    if activity_sequence_col_head in curriculum_col_map:
+        try:
+            sequence_str = ws[curriculum_col_map[activity_sequence_col_head] + str(current_row)].lower()
+            sequence_str = repair_keywords(sequence_str)
+        except(AttributeError):
+            print("No # value found at row " + str(current_row))
     logo_str = ws[curriculum_col_map[activity_logo_col_head] + str(current_row)].lower()
 
     found_qualifier = ''
-    sequence_str = repair_keywords(sequence_str)
     extracted_logo = repair_keywords(logo_str)
     for qualifier in qualifiers:
         if extracted_logo.find(qualifier) != -1:
@@ -162,17 +170,27 @@ def get_qualifier_and_logo(ws, curriculum_col_map, current_row):
     extracted_logo = extracted_logo.strip()
     return found_qualifier, extracted_logo
 
-def get_numid(ws, curriculum_col_map, current_row, logo):
-    if activity_numid_col_head in curriculum_col_map:
-        numid = ws[curriculum_col_map[activity_numid_col_head] + str(current_row)]
-    else:
+def compute_numid(logo, numid):
+    if numid is None:
         if logo in running_numid:
             running_numid[logo] += 1
         else:
             running_numid[logo] = 1
         numid = running_numid[logo]
+    elif numid.isnumeric():
+        running_numid[logo] = int(numid)
     return numid
 
+def get_numid(ws, curriculum_col_map, current_row, logo):
+    numid = None
+    if activity_numid_col_head in curriculum_col_map:
+        numid = ws[curriculum_col_map[activity_numid_col_head] + str(current_row)]
+
+    numid = compute_numid(logo, numid)
+
+    if activity_numid_col_head in curriculum_col_map:
+        ws.wsheet[curriculum_col_map[activity_numid_col_head] + str(current_row)].value = numid
+    return numid
 
 def cell_color(worksheet, curriculum_col_map, activity_row):
     colors = styles.colors.COLOR_INDEX
@@ -195,31 +213,39 @@ def activity_is_parallel_with_next(worksheet, curriculum_col_map, activity_row):
             is_parallel_with_next = True
     return is_parallel_with_next
 
+def activity_type_is_mandatory(activity_type):
+    is_mandatory = False
+    try:
+        if 'tab assessment' in activity_type.lower():
+            is_mandatory = True
+    except TypeError:
+        print('logo parsing error: ' + str(activity_type))
+    return is_mandatory
+
 def forge_grid(worksheet):
     ws = Sheet(worksheet)
     curriculum_col_map = map_headings(ws, heading_row=head_row, start_col=start_col)
-    if activity_sequence_col_head not in curriculum_col_map:
-        print('Ignoring ' + str(worksheet) + ': no # found.')
+    if activity_logo_col_head not in curriculum_col_map:
+        print('Ignoring ' + str(worksheet) + ': no logo-column found.')
         return None
     current_row = head_row + 1
     grid = []
     blank_rows = 0
     prev_activity = ''
     while current_row <= ws.wsheet.max_row:
-        activity = ws[curriculum_col_map[activity_sequence_col_head] + str(current_row)]
+        activity = ws[curriculum_col_map[activity_logo_col_head] + str(current_row)]
         if activity is None or activity == "":
             break
         activity = str(activity)
-        is_mandatory = ws.wsheet[curriculum_col_map[activity_sequence_col_head] + str(current_row)].font.bold
+        #If you need to go by formatting, use ws.wsheet with e.g., .font.bold
+        is_mandatory = activity_type_is_mandatory(ws[curriculum_col_map[activity_logo_col_head] + str(current_row)])
         is_with_next = activity_is_parallel_with_next(worksheet, curriculum_col_map, current_row)
-        if activity is not None and activity != prev_activity:
-            sequence = re.findall(r'\d+', activity)
+        if activity is not None:
             qualifier, logo = get_qualifier_and_logo(ws, curriculum_col_map, current_row)
             numid = get_numid(ws, curriculum_col_map, current_row, logo)
             activity_id = logo + '_' + str(numid)
             activity_attributes = \
-                {'sequence': sequence,
-                 'qualifier': qualifier,
+                {'qualifier': qualifier,
                  'activity logo': logo,
                  'activity identifier': activity_id,
                  'activity folder': activity_id_to_folder(logo, numid),

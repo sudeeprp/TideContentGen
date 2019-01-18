@@ -8,9 +8,17 @@ from urllib.parse import quote
 
 grid_images_to_copy = ['map_paper.png', 'link1to1.png',
                        'link1to2.png', 'link1to3.png', 'link1to4.png',
-                       'link2to1.png', 'link3to1.png', 'link4to1.png']
+                       'link2to1.png', 'link3to1.png', 'link4to1.png',
+                       'refresh.png',
+                       'chapter_none.png', 'chapter_assessment_ready.png',
+                       'chapter_done.png', 'chapter_inprogress.png',
+                       'chapter_pending.png', 'chapter_approved.png',
+                       'chapter_to_be_done.png'
+                       ]
 chapter_images_to_copy = ['chapter_icon.png', 'chapter_current.png', 'chapter_none.png', 'chapter_assessment_ready.png',
-                          'chapter_done.png', 'chapter_inprogress.png', 'chapter_pending.png']
+                          'chapter_done.png', 'chapter_inprogress.png', 'chapter_pending.png', 'chapter_approved.png',
+                          'chapter_to_be_done.png',
+                          'refresh.png']
 
 def copy_files(images_to_copy, from_dir, to_dir):
     for image_filename in images_to_copy:
@@ -45,23 +53,11 @@ def is_enrichment_remedial_pair(current_activity, next_activity):
     return (current_activity['qualifier'] == 'enrichment' and next_activity['qualifier'] == 'reinforcement') or \
             (current_activity['qualifier'] == 'reinforcement' and next_activity['qualifier'] == 'enrichment')
 
-def sequence_break(current_activity, next_activity):
-    sequence_is_broken = True
-    current_sequence = current_activity['sequence']
-    next_sequence = next_activity['sequence']
-    if (len(current_sequence) > 1) and (len(next_sequence) > 1):
-        if current_sequence[0] == next_sequence[0]:
-            sequence_is_broken = False
-    elif is_enrichment_remedial_pair(current_activity, next_activity):
-        sequence_is_broken= False
-    return sequence_is_broken
-
 def get_grid_column(grid, start_activity_index):
     current_activity_index = start_activity_index
     next_activity_index = current_activity_index + 1
     grid_column = [grid[current_activity_index]]
     while next_activity_index < len(grid):
-        #if not sequence_break(grid[current_activity_index], grid[next_activity_index]):
         if grid[current_activity_index]['withnext']:
             grid_column.append(grid[next_activity_index])
             current_activity_index = next_activity_index
@@ -71,16 +67,17 @@ def get_grid_column(grid, start_activity_index):
     return grid_column, next_activity_index
 
 
-def write_image_html(html_file, image_name, caption, raw_material_dir):
-    image_filename = image_name + '.png'
+def write_image_html(html_file, logo_name, caption, raw_material_dir):
+    image_filename = logo_name + '.png'
     html_file.write('<figure><img src="' + quote(image_filename) + '"' +
-                    ' alt="' + image_name + '">\n')
+                    ' alt="' + logo_name + '">\n')
     try:
         shutil.copyfile(os.path.join(raw_material_dir, image_filename),
                     os.path.join(os.path.dirname(html_file.name), image_filename))
     except FileNotFoundError:
         print(image_filename + " not found - while copying to " + os.path.dirname(html_file.name))
-    html_file.write('<figcaption>' + caption + '</figcaption></figure>\n')
+    html_file.write('<figcaption>' + caption + '<img id=' + html_encoded_id(logo_name + "_" + caption) +
+                    '_status class=activity_status_pic></figcaption></figure>\n')
 
 def write_pre_activity_links(html_file, lcm_of_max_rows, row_number, grid_columns, column_index):
     if column_index == 0:
@@ -130,7 +127,7 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                                                 activities[row]['activity logo'], copied_folders)
                     ''' TODO: Put this back when cards are there, to check that no cards are missed.
                     if len(copied_folders) == 0:
-                        print(str(activities[row]['sequence']) + ' activity ' + activity_folder + ' not found')
+                        print('<<insert activity not found message')
                     '''
                     html_file.write('<td rowspan="' + str(row_span) +
                                     '" onclick="' + android_call + '(\'' + activity_folder + '\');">\n')
@@ -166,9 +163,10 @@ def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activ
     html_filename = os.path.join(output_dir, 'index.html')
     html_file = open(html_filename, 'w')
     html_file.write(GridHTMLPieces.begin_head)
-    html_file.write('<body class=nomargins onload="Android.chapterEntered(\'' + chapter_id + '\');">\n')
+    html_file.write('<body class=nomargins onload="Android.chapterEntered(\'' + chapter_id + '\');refresh();">\n')
     html_file.write('<h1  class=chapterhead><span onclick="Android.chapterSelector();">&nbsp;&#x21CB;&nbsp;&nbsp;</span>' +
                     chapter_name + '</h1>\n')
+    html_file.write('<img class=refresh_pic onclick="refresh();" src="refresh.png">\n')
     html_file.write('<div style="overflow:auto; margin-top: 80px;">\n')
     html_file.write('<table class="grid_table">\n')
     current_activity_index = 0
@@ -209,7 +207,7 @@ def chapter_array_html(chapter_activities):
 
 def write_chapter_activity_characteristics(chapter_activities, output_dir):
     chapter_activity_file = open(os.path.join(output_dir, 'chapter_activities.json'), 'w')
-    chapter_activity_file.write(json.dumps(chapter_activities))
+    chapter_activity_file.write(json.dumps(chapter_activities, indent=2))
     chapter_activity_file.close()
 
 def write_chapter_html(chapter_activities, output_dir):

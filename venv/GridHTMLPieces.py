@@ -52,7 +52,33 @@ figure figcaption {
     top: 0;
     left: 0;
 }
+.activity_status_pic {
+  max-height: 24px;
+  display: inline;
+}
+.refresh_pic {
+  max-height: 48px;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
 </style>
+<script>
+function refresh() {
+  var activitiesStatusJSON = Android.getActivitiesStatus();
+  var activitiesStatus = JSON.parse(activitiesStatusJSON);
+  for(var activityID in activitiesStatus) {
+    if(activitiesStatus.hasOwnProperty(activityID)) {
+      var activityStatusImgID = activityID.replace(" ", "%20") + "_status";
+      var status_img = document.getElementById(activityStatusImgID);
+      if(status_img != null) {
+        status_img.src = "chapter_" + activitiesStatus[activityID] + ".png";
+      }
+    }
+  }
+
+}
+</script>
 </head>
 '''
 tail = '''\

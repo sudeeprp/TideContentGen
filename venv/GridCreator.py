@@ -42,7 +42,7 @@ def copy_subject_resources(raw_material_dir, grid_output_dir):
 def export_image(chapter_id, grid_html_path, output_dir):
     image_converter = 'wkhtmltoimage.exe'
     if os.path.isfile(image_converter):
-        conv_command = 'wkhtmltoimage.exe --width 5000 "' + grid_html_path + '" "' + \
+        conv_command = 'wkhtmltoimage.exe --width 5500 "' + grid_html_path + '" "' + \
                        os.path.join(output_dir, chapter_id+'.jpg') + '"'
         os.system(conv_command)
 
@@ -53,9 +53,9 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
     chapter_activities = []
     for sheet_name in w.sheetnames:
         chapter_id = sheet_name
-        chapter_name = GridWriter.html_encoded_name(w[sheet_name]['A1'].value)
+        chapter_name = str(w[sheet_name]['A1'].value)
         if chapter_name is not None:
-            chapter_name = str(chapter_name).strip()
+            chapter_name = str(GridWriter.html_encoded_name(chapter_name)).strip()
         else:
             chapter_name = chapter_id
         grid = ExcelParser.forge_grid(w[sheet_name])
@@ -72,9 +72,10 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
             shutil.rmtree(dirName)
             print('deleted: %s' % dirName)
     copy_subject_resources(raw_material_dir, grid_output_dir)
+    w.save(os.path.join(output_parent, 'numid_'+os.path.basename(curriculum_excel)))
 
 if len(sys.argv) == 5:
     generate_grid(curriculum_excel=sys.argv[1],
                   raw_material_dir=sys.argv[2], activities_dir=sys.argv[3], output_parent=sys.argv[4])
 else:
-    print('Grid creator\nUsage: ' + sys.argv[0] + ' <excel filename> <raw material dir> <activities dir> <output dir>')
+    print('Grid creator\nUsage: ' + sys.argv[0] + ' <excel filename> <raw material dir> <content dir> <output dir>')

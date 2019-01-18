@@ -19,7 +19,7 @@ user-select: none;
     margin-bottom: 0px;
 }
 .student_status_pic {
-    max-height: 20px;
+    max-height: 24px;
 }
 .student_thumbnail {
     width:100px;
@@ -71,6 +71,12 @@ figure img {
     max-height: 64px;
     max-width: 200px;
 }
+.refresh_pic {
+  max-height: 48px;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
 </style>
 '''
 script_head='''\
@@ -105,7 +111,6 @@ function refresh_students() {
         var students_in_chapter = students_in_subject[i].students;
         set_students_in_chapter(students_in_subject[i].chapter_name, students_in_chapter);
     }
-    console.log("done with refresh_students. i is " + i);
 }
 function refresh_heading() {
     document.getElementById('current_grade').innerHTML = Android.getCurrentGrade();
@@ -125,6 +130,7 @@ function set_active_chapter(chapter) {
 body_table_start='''\
 <body onload="Android.selectorEntered(); refresh_screen();">
 <h1><span id=current_grade></span>&nbsp;&nbsp;&nbsp;<span id=current_subject></span></h1>
+<img class=refresh_pic onclick="refresh_screen();" src="refresh.png">
 <table class="chapter_table">
 '''
 body_table_end='''\
