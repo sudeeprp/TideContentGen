@@ -135,7 +135,7 @@ def row_is_blank(ws, row_number):
         return False
 
 
-def activity_id_to_folder(logo, numid):
+def activity_to_folder(logo, numid):
     #if it's in the form of 'tab <digit>', then ignore the digit - that's the number of students
     if logo.lower().startswith('tab'):
         logo_words = logo.split()
@@ -160,35 +160,37 @@ def get_qualifier_and_logo(ws, curriculum_col_map, current_row):
     logo_str = ws[curriculum_col_map[activity_logo_col_head] + str(current_row)].lower()
 
     found_qualifier = ''
-    extracted_logo = repair_keywords(logo_str)
+    extracted_logo = activity_type = repair_keywords(logo_str)
     for qualifier in qualifiers:
         if sequence_str.find(qualifier) != -1 or logo_str.find(qualifier) != -1:
             found_qualifier = qualifier
+            activity_type = extracted_logo.split('-')[0]
             break
     extracted_logo = extracted_logo.strip()
-    return found_qualifier, extracted_logo
+    return found_qualifier, extracted_logo, activity_type
 
-def compute_numid(logo, numid):
+def compute_numid(activity_type, numid):
     if numid is None:
-        if logo in running_numid:
-            running_numid[logo] += 1
+        if activity_type in running_numid:
+            running_numid[activity_type] += 1
         else:
-            running_numid[logo] = 1
-        numid = running_numid[logo]
+            running_numid[activity_type] = 1
+        numid = running_numid[activity_type]
     elif numid.isnumeric():
-        running_numid[logo] = int(numid)
+        running_numid[activity_type] = int(numid)
     return numid
 
 def get_numid(ws, curriculum_col_map, current_row, logo):
     numid = None
     if activity_numid_col_head in curriculum_col_map:
         numid = ws[curriculum_col_map[activity_numid_col_head] + str(current_row)]
-
     numid = compute_numid(logo, numid)
-
-    if activity_numid_col_head in curriculum_col_map:
-        ws.wsheet[curriculum_col_map[activity_numid_col_head] + str(current_row)].value = numid
     return numid
+
+def write_numid(display_numid, ws, curriculum_col_map, current_row):
+    if activity_numid_col_head in curriculum_col_map:
+        ws.wsheet[curriculum_col_map[activity_numid_col_head] + str(current_row)].value = "'" + display_numid
+
 
 def cell_color(worksheet, curriculum_col_map, activity_row):
     colors = styles.colors.COLOR_INDEX
@@ -245,19 +247,20 @@ def forge_grid(worksheet, zero_symbol_offset):
         if activity is None or activity == "":
             break
         activity = str(activity)
-        #If you need to go by formatting, use ws.wsheet with e.g., .font.bold
-        is_mandatory = activity_type_is_mandatory(ws[curriculum_col_map[activity_logo_col_head] + str(current_row)])
         is_with_next = activity_is_parallel_with_next(worksheet, curriculum_col_map, current_row)
         if activity is not None:
-            qualifier, logo = get_qualifier_and_logo(ws, curriculum_col_map, current_row)
-            numid = get_numid(ws, curriculum_col_map, current_row, logo)
+            qualifier, logo, activity_type = get_qualifier_and_logo(ws, curriculum_col_map, current_row)
+            numid = get_numid(ws, curriculum_col_map, current_row, activity_type)
             display_numid = ascii_number_to_local(str(numid), zero_symbol_offset)
+            write_numid(display_numid, ws, curriculum_col_map, current_row)
+            is_mandatory = activity_type_is_mandatory(activity_type)
+            #data-collection is done based on activity_id. so keep the displayed logo and the ascii numid
             activity_id = logo + '_' + str(numid)
             activity_attributes = \
                 {'qualifier': qualifier,
                  'activity logo': logo,
                  'activity identifier': activity_id,
-                 'activity folder': activity_id_to_folder(logo, display_numid),
+                 'activity folder': activity_to_folder(activity_type, display_numid),
                  'display name': display_numid,
                  'mandatory': is_mandatory,
                  'withnext': is_with_next

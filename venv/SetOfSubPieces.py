@@ -23,7 +23,8 @@ figure img {
 figure figcaption {
     text-align: center;
     font-family: Verdana;
-    font-size: medium;
+    font-weight: bold;
+    font-size: large;
 }
 .subactivity_spread {
     background: url("map_paper.png");

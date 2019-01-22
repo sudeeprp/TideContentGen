@@ -36,12 +36,13 @@ figure img {
     margin-left: auto;
     margin-right: auto;
     max-height: 100px;
-    max-width: 100px;
+    max-width: 200px;
 }
 figure figcaption {
     text-align: center;
     font-family: Verdana;
-    font-size: medium;
+    font-weight: bold;
+    font-size: large;
 }
 .linkimages {
     max-height:320px;
