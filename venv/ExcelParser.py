@@ -162,8 +162,6 @@ def get_qualifier_and_logo(ws, curriculum_col_map, current_row):
     found_qualifier = ''
     extracted_logo = repair_keywords(logo_str)
     for qualifier in qualifiers:
-        if extracted_logo.find(qualifier) != -1:
-            extracted_logo = extracted_logo.replace(qualifier, '')
         if sequence_str.find(qualifier) != -1 or logo_str.find(qualifier) != -1:
             found_qualifier = qualifier
             break
@@ -222,7 +220,17 @@ def activity_type_is_mandatory(activity_type):
         print('logo parsing error: ' + str(activity_type))
     return is_mandatory
 
-def forge_grid(worksheet):
+def ascii_number_to_local(ascii_numstr, zero_symbol_offset):
+    local_numstr = ''
+    for c in ascii_numstr:
+        if ord(c) >= ord('0') and ord(c) <= ord('9'):
+            local_numstr += chr(ord(c) + zero_symbol_offset)
+        else:
+            local_numstr += c
+    return local_numstr
+
+
+def forge_grid(worksheet, zero_symbol_offset):
     ws = Sheet(worksheet)
     curriculum_col_map = map_headings(ws, heading_row=head_row, start_col=start_col)
     if activity_logo_col_head not in curriculum_col_map:
@@ -243,13 +251,14 @@ def forge_grid(worksheet):
         if activity is not None:
             qualifier, logo = get_qualifier_and_logo(ws, curriculum_col_map, current_row)
             numid = get_numid(ws, curriculum_col_map, current_row, logo)
+            display_numid = ascii_number_to_local(str(numid), zero_symbol_offset)
             activity_id = logo + '_' + str(numid)
             activity_attributes = \
                 {'qualifier': qualifier,
                  'activity logo': logo,
                  'activity identifier': activity_id,
-                 'activity folder': activity_id_to_folder(logo, numid),
-                 'display name': str(numid),
+                 'activity folder': activity_id_to_folder(logo, display_numid),
+                 'display name': display_numid,
                  'mandatory': is_mandatory,
                  'withnext': is_with_next
                  }
@@ -284,3 +293,17 @@ def pics_sounds_map(excel_file):
         print("Error at row " + str(current_row))
         raise
     return pics_to_sounds
+
+def grab_config(workbook):
+    config_dict = {}
+    if 'config' in workbook:
+        worksheet = workbook['config']
+        current_row = 1
+        while worksheet['A' + str(current_row)].value is not None:
+            key = worksheet['A' + str(current_row)].value
+            value = worksheet['B' + str(current_row)].value
+            if value[0] == "'":
+                value = value[1:]
+            config_dict[key] = value
+            current_row += 1
+    return config_dict

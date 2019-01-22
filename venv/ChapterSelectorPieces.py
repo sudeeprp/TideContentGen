@@ -94,7 +94,8 @@ function set_students_in_chapter(chapter, students_in_chapter) {
     var students_html = ''
     var numStudents = students_in_chapter.length;
     for(var i = 0; i < numStudents; i++) {
-        students_html += "<figure class=student_figure><img class=student_thumbnail src='data:image/jpeg;base64, " +
+        students_html += "<figure class=student_figure onclick='Android.diveToStudent(\\"" + students_in_chapter[i].id + "\\");'>" +
+                "<img class=student_thumbnail src='data:image/jpeg;base64, " +
                 students_in_chapter[i].thumbnail + "'/>";
         if('status' in students_in_chapter[i]) {
             students_html += "<img class=student_status_pic src='chapter_" + students_in_chapter[i].status + ".png'/>";

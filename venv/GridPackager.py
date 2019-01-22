@@ -2,6 +2,11 @@ from continue_copy import continue_copy
 import os
 import sys
 
+
+def write_local_info(localinfo_dir, output_dir):
+    continue_copy(os.path.join(localinfo_dir, "display names of grades.json"), output_dir)
+    continue_copy(os.path.join(localinfo_dir, "display names of subjects.json"), output_dir)
+
 def write_content_description(output_dir):
     content_description = '{"content_version": "7 flexi"}'
     content_desc_file = open(output_dir + '/content_descriptor.json', 'w')
@@ -24,9 +29,10 @@ def write_grade_backgrounds(raw_material_dir, output_parent):
         continue_copy(os.path.join(raw_material_dir, grade_resource), os.path.join(output_parent, grade_resource))
 
 
-if len(sys.argv) == 3:
-    output_dir = sys.argv[2]
+if len(sys.argv) == 4:
+    output_dir = sys.argv[3]
     write_grade_backgrounds(raw_material_dir=sys.argv[1], output_parent=output_dir)
+    write_local_info(localinfo_dir=sys.argv[2], output_dir=output_dir)
     write_content_description(output_dir)
     print("Package done.")
 else:

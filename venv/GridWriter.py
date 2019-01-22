@@ -24,6 +24,12 @@ def copy_files(images_to_copy, from_dir, to_dir):
     for image_filename in images_to_copy:
         shutil.copyfile(os.path.join(from_dir, image_filename), os.path.join(to_dir, image_filename))
 
+def copytree_warn_ifexist(source, target):
+    try:
+        shutil.copytree(source, target)
+    except FileExistsError:
+        print("** Warning: " + target + " already exists")
+
 def copy_activity_folder(activities_dir, activity_folder, target_dir):
     copied_files = []
     directories = []
@@ -35,7 +41,7 @@ def copy_activity_folder(activities_dir, activity_folder, target_dir):
         activity_path = os.path.join(activities_dir, directory_name)
         if directory_name.lower() == activity_folder_lowercase or \
                  directory_name.lower().startswith(activity_folder_lowercase + '.'):
-            shutil.copytree(activity_path, os.path.join(target_dir, directory_name))
+            copytree_warn_ifexist(activity_path, os.path.join(target_dir, directory_name))
             copied_files.append(directory_name)
         else:
             sub_copied_files = copy_activity_folder(activity_path, activity_folder, target_dir)
@@ -145,7 +151,7 @@ def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, a
     logo_filename = logo + '.png'
     background_filename = "map_paper.png"
     os.mkdir(target_activity_folder)
-    sub_activity_html = open(os.path.join(target_activity_folder, "index.html"), "w")
+    sub_activity_html = open(os.path.join(target_activity_folder, "index.html"), "w", encoding="utf-8")
     shutil.copy(os.path.join(raw_material_dir, logo_filename), os.path.join(target_activity_folder, logo_filename))
     shutil.copy(os.path.join(raw_material_dir, background_filename), os.path.join(target_activity_folder, background_filename))
     sub_activity_html.write(SetOfSubPieces.begin_head)
@@ -161,7 +167,7 @@ def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, a
 def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir, output_dir):
     os.mkdir(output_dir)
     html_filename = os.path.join(output_dir, 'index.html')
-    html_file = open(html_filename, 'w')
+    html_file = open(html_filename, "w", encoding="utf-8")
     html_file.write(GridHTMLPieces.begin_head)
     html_file.write('<body class=nomargins onload="Android.chapterEntered(\'' + chapter_id + '\');refresh();">\n')
     html_file.write('<h1  class=chapterhead><span onclick="Android.chapterSelector();">&nbsp;&#x21CB;&nbsp;&nbsp;</span>' +
@@ -206,12 +212,12 @@ def chapter_array_html(chapter_activities):
     return json.dumps([chapter['chapter_id'] for chapter in chapter_activities])
 
 def write_chapter_activity_characteristics(chapter_activities, output_dir):
-    chapter_activity_file = open(os.path.join(output_dir, 'chapter_activities.json'), 'w')
+    chapter_activity_file = open(os.path.join(output_dir, 'chapter_activities.json'), "w", encoding="utf-8")
     chapter_activity_file.write(json.dumps(chapter_activities, indent=2))
     chapter_activity_file.close()
 
 def write_chapter_html(chapter_activities, output_dir):
-    chapterselector_file = open(os.path.join(output_dir, 'chapters.html'), 'w')
+    chapterselector_file = open(os.path.join(output_dir, 'chapters.html'), "w", encoding="utf-8")
     chapterselector_file.write(ChapterSelectorPieces.begin_head)
     chapterselector_file.write(ChapterSelectorPieces.script_head)
     chapterselector_file.write('var chapters = ' + chapter_array_html(chapter_activities) + '\n')

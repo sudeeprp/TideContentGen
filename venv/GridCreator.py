@@ -46,10 +46,21 @@ def export_image(chapter_id, grid_html_path, output_dir):
                        os.path.join(output_dir, chapter_id+'.jpg') + '"'
         os.system(conv_command)
 
+def get_zero_symbol_offset(config_dict):
+    zero_symbol_key = "symbols zero one two"
+    zero_symbol_ord = ord('0')
+    if zero_symbol_key in config_dict:
+        zero_symbol_value = config_dict[zero_symbol_key]
+        if not isinstance(zero_symbol_value, str):
+            print("Symbol in config sheet needs to be a string!")
+        zero_symbol_ord = ord(zero_symbol_value[0])
+    return zero_symbol_ord - ord('0')
+
 def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_parent):
     grid_output_dir = os.path.join(output_parent, os.path.splitext(os.path.basename(curriculum_excel))[0])
     make_clean_dir(grid_output_dir)
     w = load_workbook(curriculum_excel)
+    symbol_offset = get_zero_symbol_offset(ExcelParser.grab_config(w))
     chapter_activities = []
     for sheet_name in w.sheetnames:
         chapter_id = sheet_name
@@ -58,7 +69,7 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
             chapter_name = str(GridWriter.html_encoded_name(chapter_name)).strip()
         else:
             chapter_name = chapter_id
-        grid = ExcelParser.forge_grid(w[sheet_name])
+        grid = ExcelParser.forge_grid(w[sheet_name], symbol_offset)
         if grid is not None:
             chapter_activities.append({'chapter_name': chapter_name,
                                        'chapter_id': chapter_id,
@@ -66,6 +77,8 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
             grid_html_path = GridWriter.forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir,
                                             os.path.join(grid_output_dir, chapter_id))
             export_image(chapter_id, grid_html_path, grid_output_dir)
+        else:
+            w.remove(w[sheet_name])
     GridWriter.write_chapter_activities(chapter_activities, raw_material_dir, grid_output_dir)
     for dirName, subdirList, fileList in os.walk(output_parent):
         if dirName.lower().endswith('projectfile'):
