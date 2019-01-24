@@ -1,11 +1,7 @@
 from PIL import Image
 import os
 
-max_x = 750
-max_y = 750
-min_file_bytes = 500000
-
-def compress(path, filename):
+def compress(path, filename, max_x, max_y, min_file_bytes):
     filepath = os.path.join(path, filename)
     file_bytes = os.path.getsize(filepath)
     if file_bytes < min_file_bytes:
@@ -33,9 +29,16 @@ def compress(path, filename):
     print(filepath + " compressed from " +
           str(file_bytes // 1024) + "KB to " + str(compressed_bytes // 1024) + "KB")
 
-def compress_path(start_dirname):
+def compress_path(start_dirname, max_x=750, max_y=750, min_file_bytes=500000):
     Image.MAX_IMAGE_PIXELS = None
     for dirName, subdirList, fileList in os.walk(start_dirname):
         for fname in fileList:
             if not fname.startswith('.') and (fname.endswith('png') or fname.endswith('PNG')):
-                compress(dirName, fname)
+                compress(dirName, fname, max_x, max_y, min_file_bytes)
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) == 5:
+        compress_path(start_dirname=sys.argv[1], max_x=int(sys.argv[2]), max_y=int(sys.argv[3]), min_file_bytes=int(sys.argv[4]))
+    else:
+        print("Usage: " + sys.argv[0] + " <start dir> <max_x> <max_y> <min_bytes>")

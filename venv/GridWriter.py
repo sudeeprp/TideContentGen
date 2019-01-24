@@ -152,6 +152,7 @@ def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, a
     background_filename = "map_paper.png"
     os.mkdir(target_activity_folder)
     sub_activity_html = open(os.path.join(target_activity_folder, "index.html"), "w", encoding="utf-8")
+    #TODO: Use <<write_image_html
     shutil.copy(os.path.join(raw_material_dir, logo_filename), os.path.join(target_activity_folder, logo_filename))
     shutil.copy(os.path.join(raw_material_dir, background_filename), os.path.join(target_activity_folder, background_filename))
     sub_activity_html.write(SetOfSubPieces.begin_head)

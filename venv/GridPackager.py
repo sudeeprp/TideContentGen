@@ -8,7 +8,8 @@ def write_local_info(localinfo_dir, output_dir):
     continue_copy(os.path.join(localinfo_dir, "display names of subjects.json"), output_dir)
 
 def write_content_description(output_dir):
-    content_description = '{"content_version": "7 flexi"}'
+    content_description = '{"content_version": "8 loca stat"}'
+    print("Packaging: " + content_description)
     content_desc_file = open(output_dir + '/content_descriptor.json', 'w')
     content_desc_file.write(content_description)
     content_desc_file.close()
@@ -36,4 +37,4 @@ if len(sys.argv) == 4:
     write_content_description(output_dir)
     print("Package done.")
 else:
-    print('Grid packager\nUsage: ' + sys.argv[0] + ' <raw material dir> <output dir>')
+    print('Grid packager\nUsage: ' + sys.argv[0] + ' <raw material dir> <localinfo dir> <output dir>')
