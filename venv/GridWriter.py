@@ -73,17 +73,26 @@ def get_grid_column(grid, start_activity_index):
     return grid_column, next_activity_index
 
 
-def write_image_html(html_file, logo_name, caption, raw_material_dir):
+def write_image_html(html_file, logo_name, caption, raw_material_dir, copied_folders, activity_folder):
     image_filename = logo_name + '.png'
-    html_file.write('<figure><img src="' + quote(image_filename) + '"' +
-                    ' alt="' + logo_name + '">\n')
+    if len(copied_folders) == 0:
+        copied_folders.append(activity_folder)
+    if(len(copied_folders) > 1):
+        html_file.write('<div style="display:flex;">\n')
+        copied_folders = list(set(copied_folders))
+        copied_folders.sort()
+    for copied_folder in copied_folders:
+        html_file.write('<figure onclick="Android.startActivity(\'' + copied_folder + '\');"><img src="' +
+                        quote(image_filename) + '"' + ' alt="' + logo_name + '">\n')
+        html_file.write('<figcaption>' + caption + '<img id=' + html_encoded_id(copied_folder.lower()) +
+                        '_status class=activity_status_pic></figcaption></figure>\n')
     try:
         shutil.copyfile(os.path.join(raw_material_dir, image_filename),
                     os.path.join(os.path.dirname(html_file.name), image_filename))
     except FileNotFoundError:
         print(image_filename + " not found - while copying to " + os.path.dirname(html_file.name))
-    html_file.write('<figcaption>' + caption + '<img id=' + html_encoded_id(logo_name + "_" + caption) +
-                    '_status class=activity_status_pic></figcaption></figure>\n')
+    if(len(copied_folders) > 1):
+        html_file.write('</div>')
 
 def write_pre_activity_links(html_file, lcm_of_max_rows, row_number, grid_columns, column_index):
     if column_index == 0:
@@ -122,48 +131,19 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                 if table_row % row_span == 0:
                     row = table_row // row_span
                     activity_folder = activities[row]['activity folder']
-                    android_call = 'Android.startActivity'
                     copied_folders = []
                     if os.path.isdir(activities_dir):
                         copied_folders = copy_activity_folder(activities_dir, activity_folder, os.path.dirname(html_file.name))
-                    if len(copied_folders) > 1:
-                        android_call = 'Android.subActivity'
-                        create_sub_activity_set(raw_material_dir, os.path.dirname(html_file.name),
-                                                activities[row]['display name'], activity_folder,
-                                                activities[row]['activity logo'], copied_folders)
-                    ''' TODO: Put this back when cards are there, to check that no cards are missed.
-                    if len(copied_folders) == 0:
-                        print('<<insert activity not found message')
-                    '''
-                    html_file.write('<td rowspan="' + str(row_span) +
-                                    '" onclick="' + android_call + '(\'' + activity_folder + '\');">\n')
+                    html_file.write('<td rowspan="' + str(row_span) + '">\n')
                     write_image_html(html_file, activities[row]['activity logo'],
-                                     activities[row]['display name'], raw_material_dir)
+                                     activities[row]['display name'], raw_material_dir,
+                                     copied_folders, activity_folder)
                     html_file.write('</td>\n')
                 write_post_activity_links(html_file, lcm_of_max_rows, table_row, grid_columns, i)
         html_file.write('</tr>\n')
     if len(activities) > 0 and \
             max([len(activities) for activities in grid_columns]) > max_rows:
         print('WARNING: number of parallel activities exceeds ' + str(max_rows))
-
-def create_sub_activity_set(raw_material_dir, target_dir, activity_identifier, activity_folder, logo, copied_files):
-    target_activity_folder = os.path.join(target_dir, activity_folder)
-    logo_filename = logo + '.png'
-    background_filename = "map_paper.png"
-    os.mkdir(target_activity_folder)
-    sub_activity_html = open(os.path.join(target_activity_folder, "index.html"), "w", encoding="utf-8")
-    #TODO: Use <<write_image_html
-    shutil.copy(os.path.join(raw_material_dir, logo_filename), os.path.join(target_activity_folder, logo_filename))
-    shutil.copy(os.path.join(raw_material_dir, background_filename), os.path.join(target_activity_folder, background_filename))
-    sub_activity_html.write(SetOfSubPieces.begin_head)
-    counter = 1
-    for directory in copied_files:
-        sub_activity_html.write('<figure><img src="' + logo_filename +
-                                '" onclick="Android.startActivity(\'' + directory + '\');" alt="' + logo + '">' +
-                                '<figcaption>' + activity_identifier + " (" + str(counter) + ')</figcaption></figure>\n')
-        counter += 1
-    sub_activity_html.write(SetOfSubPieces.tail)
-    sub_activity_html.close()
 
 def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir, output_dir):
     os.mkdir(output_dir)

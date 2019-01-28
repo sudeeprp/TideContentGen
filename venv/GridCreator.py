@@ -12,7 +12,7 @@ from openpyxl import load_workbook
 def make_clean_dir(output_dir):
     if os.path.isdir(output_dir):
         shutil.rmtree(output_dir)
-    print('Look in ' + output_dir)
+    print('\nLook in ' + output_dir)
     for i in range(2):
         try:
             os.makedirs(output_dir)
@@ -29,7 +29,7 @@ def make_clean_dir(output_dir):
 def make_activity_characteristics(grid):
     activity_map = {}
     for activity in grid:
-        activity_map[activity['activity identifier']] = {'mandatory': activity['mandatory']}
+        activity_map[activity['activity folder']] = {'mandatory': activity['mandatory']}
     return activity_map
 
 
@@ -63,18 +63,16 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
     symbol_offset = get_zero_symbol_offset(ExcelParser.grab_config(w))
     chapter_activities = []
     for sheet_name in w.sheetnames:
-        chapter_id = sheet_name
+        html_chapter_name = chapter_id = sheet_name.upper()
         chapter_name = str(w[sheet_name]['A1'].value)
         if chapter_name is not None:
-            chapter_name = str(GridWriter.html_encoded_name(chapter_name)).strip()
-        else:
-            chapter_name = chapter_id
+            html_chapter_name = str(GridWriter.html_encoded_name(chapter_name)).strip()
         grid = ExcelParser.forge_grid(w[sheet_name], symbol_offset)
         if grid is not None:
             chapter_activities.append({'chapter_name': chapter_name,
                                        'chapter_id': chapter_id,
                                        'activities': make_activity_characteristics(grid)})
-            grid_html_path = GridWriter.forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir,
+            grid_html_path = GridWriter.forge_milestone_grid(grid, html_chapter_name, chapter_id, raw_material_dir, activities_dir,
                                             os.path.join(grid_output_dir, chapter_id))
             export_image(chapter_id, grid_html_path, grid_output_dir)
         else:

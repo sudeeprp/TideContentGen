@@ -65,19 +65,23 @@ figure figcaption {
 }
 </style>
 <script>
+function refresh_screen() {
+  refresh();
+}
 function refresh() {
   var activitiesStatusJSON = Android.getActivitiesStatus();
   var activitiesStatus = JSON.parse(activitiesStatusJSON);
   for(var activityID in activitiesStatus) {
     if(activitiesStatus.hasOwnProperty(activityID)) {
-      var activityStatusImgID = activityID.replace(" ", "%20") + "_status";
+      var activityStatusImgID = activityID.replace(/ /g, "%20") + "_status";
       var status_img = document.getElementById(activityStatusImgID);
       if(status_img != null) {
         status_img.src = "chapter_" + activitiesStatus[activityID] + ".png";
+      } else {
+        console.log("Ayyo, element " + activityStatusImgID + " not found");
       }
     }
   }
-
 }
 </script>
 </head>
