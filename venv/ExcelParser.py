@@ -157,7 +157,7 @@ def get_qualifier_and_logo(ws, curriculum_col_map, current_row):
             sequence_str = repair_keywords(sequence_str)
         except(AttributeError):
             print("No # value found at row " + str(current_row))
-    logo_str = ws[curriculum_col_map[activity_logo_col_head] + str(current_row)].lower()
+    logo_str = (ws[curriculum_col_map[activity_logo_col_head] + str(current_row)]).lower()
 
     found_qualifier = ''
     extracted_logo = activity_type = repair_keywords(logo_str)
@@ -246,7 +246,7 @@ def forge_grid(worksheet, zero_symbol_offset):
         activity = ws[curriculum_col_map[activity_logo_col_head] + str(current_row)]
         if activity is None or activity == "":
             break
-        activity = str(activity)
+        activity = str(activity).lower()
         is_with_next = activity_is_parallel_with_next(worksheet, curriculum_col_map, current_row)
         if activity is not None:
             qualifier, logo, activity_type = get_qualifier_and_logo(ws, curriculum_col_map, current_row)

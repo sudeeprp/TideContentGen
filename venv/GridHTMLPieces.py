@@ -41,8 +41,7 @@ figure img {
 figure figcaption {
     text-align: center;
     font-family: Verdana;
-    font-weight: bold;
-    font-size: large;
+    font-size: 24px;
 }
 .linkimages {
     max-height:320px;
@@ -73,7 +72,7 @@ function refresh() {
   var activitiesStatus = JSON.parse(activitiesStatusJSON);
   for(var activityID in activitiesStatus) {
     if(activitiesStatus.hasOwnProperty(activityID)) {
-      var activityStatusImgID = activityID.replace(/ /g, "%20") + "_status";
+      var activityStatusImgID = activityID.replace(/ /g, "%20").toLowerCase() + "_status";
       var status_img = document.getElementById(activityStatusImgID);
       if(status_img != null) {
         status_img.src = "chapter_" + activitiesStatus[activityID] + ".png";

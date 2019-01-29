@@ -7,6 +7,7 @@ import shutil
 import sys
 import errno
 import time
+import re
 from openpyxl import load_workbook
 
 def make_clean_dir(output_dir):
@@ -56,6 +57,10 @@ def get_zero_symbol_offset(config_dict):
         zero_symbol_ord = ord(zero_symbol_value[0])
     return zero_symbol_ord - ord('0')
 
+def warn_on_improper_chapter_id(chapter_id):
+    if not re.match("^[\w\d_-]+$", chapter_id):
+        print("** Warning: " + chapter_id + " is not a valid ID (only alpha-numeric and _ allowed)")
+
 def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_parent):
     grid_output_dir = os.path.join(output_parent, os.path.splitext(os.path.basename(curriculum_excel))[0])
     make_clean_dir(grid_output_dir)
@@ -64,6 +69,7 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
     chapter_activities = []
     for sheet_name in w.sheetnames:
         html_chapter_name = chapter_id = sheet_name.upper()
+        warn_on_improper_chapter_id(chapter_id)
         chapter_name = str(w[sheet_name]['A1'].value)
         if chapter_name is not None:
             html_chapter_name = str(GridWriter.html_encoded_name(chapter_name)).strip()

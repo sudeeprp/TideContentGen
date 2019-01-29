@@ -82,9 +82,10 @@ def write_image_html(html_file, logo_name, caption, raw_material_dir, copied_fol
         copied_folders = list(set(copied_folders))
         copied_folders.sort()
     for copied_folder in copied_folders:
-        html_file.write('<figure onclick="Android.startActivity(\'' + copied_folder + '\');"><img src="' +
+        activity_folder = copied_folder.lower()
+        html_file.write('<figure onclick="Android.startActivity(\'' + activity_folder + '\');"><img src="' +
                         quote(image_filename) + '"' + ' alt="' + logo_name + '">\n')
-        html_file.write('<figcaption>' + caption + '<img id=' + html_encoded_id(copied_folder.lower()) +
+        html_file.write('<figcaption>' + caption + '<img id=' + html_encoded_id(activity_folder) +
                         '_status class=activity_status_pic></figcaption></figure>\n')
     try:
         shutil.copyfile(os.path.join(raw_material_dir, image_filename),

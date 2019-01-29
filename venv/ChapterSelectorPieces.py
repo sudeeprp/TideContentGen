@@ -47,7 +47,7 @@ user-select: none;
     white-space: normal;
 }
 .chapter_figcaption {
-    font-size: medium
+    font-size: 20px;
 }
 .chapter_table, .chapter_cell, .chapter_icon {
     border-collapse:collapse; border:1px solid #FF00FF;
