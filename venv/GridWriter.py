@@ -113,6 +113,11 @@ def write_post_activity_links(html_file, lcm_of_max_rows, row_number, grid_colum
         html_file.write('<img src="' + post_image + '" alt="x to one" class=linkimages>\n')
         html_file.write('</td>\n')
 
+def check_copy(activity_folder, copied_folders):
+    if len(copied_folders) == 0 and \
+            (activity_folder.lower().startswith('tab') or activity_folder.lower().startswith('song')):
+        print("**Warning: Folder " + activity_folder + " not found")
+
 def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activities_dir):
     max_rows = 4
     lcm_of_max_rows = 12
@@ -135,6 +140,7 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                     copied_folders = []
                     if os.path.isdir(activities_dir):
                         copied_folders = copy_activity_folder(activities_dir, activity_folder, os.path.dirname(html_file.name))
+                    check_copy(activity_folder, copied_folders)
                     html_file.write('<td rowspan="' + str(row_span) + '">\n')
                     write_image_html(html_file, activities[row]['activity logo'],
                                      activities[row]['display name'], raw_material_dir,
