@@ -1,6 +1,8 @@
 from continue_copy import continue_copy
+from datetime import datetime
 import os
 import sys
+import json
 
 
 def write_local_info(localinfo_dir, output_dir):
@@ -8,10 +10,14 @@ def write_local_info(localinfo_dir, output_dir):
     continue_copy(os.path.join(localinfo_dir, "display names of subjects.json"), output_dir)
 
 def write_content_description(output_dir):
-    content_description = '{"content_version": "9 subi"}'
-    print("Packaging: " + content_description)
+    content_description = {"content_version": "10 subi",
+                           "timestamp": str(datetime.now()),
+                           "location": str(output_dir.split('\\')[1:])
+                          }
+    content_desc_json = json.dumps(content_description, indent=2)
+    print("Packaging: " + content_desc_json)
     content_desc_file = open(output_dir + '/content_descriptor.json', 'w')
-    content_desc_file.write(content_description)
+    content_desc_file.write(content_desc_json)
     content_desc_file.close()
 
 def get_grade_set(parentdir):

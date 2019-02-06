@@ -114,15 +114,20 @@ def write_post_activity_links(html_file, lcm_of_max_rows, row_number, grid_colum
         html_file.write('</td>\n')
 
 def check_copy(activity_folder, copied_folders):
+    sub_folders = []
     if len(copied_folders) == 0 and \
             (activity_folder.lower().startswith('tab') or activity_folder.lower().startswith('song')):
         print("**Warning: Folder " + activity_folder + " not found")
+    elif len(copied_folders) > 1:
+        sub_folders = copied_folders
+    return sub_folders
 
 def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activities_dir):
     max_rows = 4
     lcm_of_max_rows = 12
     filled_rows_in_lcm = []
     activities = []
+    sub_folders = []
     for column in grid_columns:
         for i in range(0, lcm_of_max_rows, lcm_of_max_rows//len(column)):
             filled_rows_in_lcm.append(i)
@@ -140,7 +145,7 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
                     copied_folders = []
                     if os.path.isdir(activities_dir):
                         copied_folders = copy_activity_folder(activities_dir, activity_folder, os.path.dirname(html_file.name))
-                    check_copy(activity_folder, copied_folders)
+                    sub_folders.extend(check_copy(activity_folder, copied_folders))
                     html_file.write('<td rowspan="' + str(row_span) + '">\n')
                     write_image_html(html_file, activities[row]['activity logo'],
                                      activities[row]['display name'], raw_material_dir,
@@ -151,6 +156,7 @@ def write_grid_html_columns(html_file, grid_columns, raw_material_dir, activitie
     if len(activities) > 0 and \
             max([len(activities) for activities in grid_columns]) > max_rows:
         print('WARNING: number of parallel activities exceeds ' + str(max_rows))
+    return sub_folders
 
 def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activities_dir, output_dir):
     os.mkdir(output_dir)
@@ -169,14 +175,14 @@ def forge_milestone_grid(grid, chapter_name, chapter_id, raw_material_dir, activ
         column, next_activity_index = get_grid_column(grid, current_activity_index)
         grid_columns.append(column)
         current_activity_index = next_activity_index
-    write_grid_html_columns(html_file, grid_columns, raw_material_dir, activities_dir)
+    sub_folders = write_grid_html_columns(html_file, grid_columns, raw_material_dir, activities_dir)
     html_file.write('</table>\n')
     html_file.write('</div>\n')
     html_file.write('</body>\n')
     html_file.write(GridHTMLPieces.tail)
     html_file.close()
     copy_files(grid_images_to_copy, raw_material_dir, output_dir)
-    return html_filename
+    return html_filename, sub_folders
 
 def write_chapter_row(chapterselector_file, chapter):
     chapter_name = html_encoded_name(chapter['chapter_name'])

@@ -27,10 +27,15 @@ def make_clean_dir(output_dir):
     return output_dir
 
 
-def make_activity_characteristics(grid):
+def make_activity_characteristics(grid, sub_activities):
     activity_map = {}
     for activity in grid:
-        activity_map[activity['activity folder']] = {'mandatory': activity['mandatory']}
+        activity_key = activity['activity folder'].lower()
+        activity_character = {'mandatory': activity['mandatory']}
+        activity_map[activity_key] = activity_character
+        activity_subs = [sub for sub in sub_activities if sub.lower().startswith(activity_key + '.')]
+        for activity_sub in activity_subs:
+            activity_map[activity_sub] = activity_character
     return activity_map
 
 
@@ -75,11 +80,12 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
             html_chapter_name = str(GridWriter.html_encoded_name(chapter_name)).strip()
         grid = ExcelParser.forge_grid(w[sheet_name], symbol_offset)
         if grid is not None:
+            grid_html_path, sub_activites = GridWriter.forge_milestone_grid(grid, html_chapter_name, chapter_id,
+                                                                        raw_material_dir, activities_dir,
+                                                                        os.path.join(grid_output_dir, chapter_id))
             chapter_activities.append({'chapter_name': chapter_name,
                                        'chapter_id': chapter_id,
-                                       'activities': make_activity_characteristics(grid)})
-            grid_html_path = GridWriter.forge_milestone_grid(grid, html_chapter_name, chapter_id, raw_material_dir, activities_dir,
-                                            os.path.join(grid_output_dir, chapter_id))
+                                       'activities': make_activity_characteristics(grid, sub_activites)})
             export_image(chapter_id, grid_html_path, grid_output_dir)
         else:
             w.remove(w[sheet_name])
