@@ -9,7 +9,7 @@ activity_numid_col_head = 'numid'
 head_row = 3
 start_col = 'B'
 running_numid = {}
-
+numid_color_map = {}
 
 class Sheet:
     def __init__(self, wsheet):
@@ -169,32 +169,52 @@ def get_qualifier_and_logo(ws, curriculum_col_map, current_row):
     extracted_logo = extracted_logo.strip()
     return found_qualifier, extracted_logo, activity_type
 
-def compute_numid(activity_type, numid):
+def run_numid(activity_type):
+    if activity_type in running_numid:
+        running_numid[activity_type] += 1
+    else:
+        running_numid[activity_type] = 1
+    return running_numid[activity_type]
+
+def compute_numid(chapterID, activity_type, numid, numid_color):
+    activity_ref = ""
+    if numid_color is not None:
+        activity_ref = chapterID + activity_type + numid_color
+
     if numid is None:
-        if activity_type in running_numid:
-            running_numid[activity_type] += 1
+        if activity_ref in numid_color_map:
+            numid = numid_color_map[activity_ref]
         else:
-            running_numid[activity_type] = 1
-        numid = running_numid[activity_type]
+            numid = run_numid(activity_type)
     elif numid.isnumeric():
         running_numid[activity_type] = int(numid)
+
+    if activity_ref != "":
+        numid_color_map[activity_ref] = numid
     return numid
 
 def get_numid(ws, curriculum_col_map, current_row, logo):
     numid = None
+    predefined = False
+    numid_color = None
     if activity_numid_col_head in curriculum_col_map:
         numid = ws[curriculum_col_map[activity_numid_col_head] + str(current_row)]
-    numid = compute_numid(logo, numid)
-    return numid
+        numid_color = cell_color(ws.wsheet, curriculum_col_map, activity_numid_col_head, current_row)
+        if numid is not None: predefined = True
+    numid = compute_numid(str(ws.wsheet), logo, numid, numid_color)
+    return numid, predefined
 
-def write_numid(display_numid, ws, curriculum_col_map, current_row):
+def write_numid(display_numid, numid_is_predef, ws, curriculum_col_map, current_row):
+    prefix = ""
+    if not numid_is_predef:
+        prefix = "'"
     if activity_numid_col_head in curriculum_col_map:
-        ws.wsheet[curriculum_col_map[activity_numid_col_head] + str(current_row)].value = "'" + display_numid
+        ws.wsheet[curriculum_col_map[activity_numid_col_head] + str(current_row)].value = prefix + display_numid
 
 
-def cell_color(worksheet, curriculum_col_map, activity_row):
+def cell_color(worksheet, curriculum_col_map, col_name, activity_row):
     colors = styles.colors.COLOR_INDEX
-    color = worksheet[curriculum_col_map[activity_logo_col_head] +
+    color = worksheet[curriculum_col_map[col_name] +
                                            str(activity_row)].fill.start_color
     if color.index == '00000000' or color.index == 'FFFFFFFF':
         color = None
@@ -206,9 +226,9 @@ def cell_color(worksheet, curriculum_col_map, activity_row):
 
 def activity_is_parallel_with_next(worksheet, curriculum_col_map, activity_row):
     is_parallel_with_next = False
-    activity_bk_color = cell_color(worksheet, curriculum_col_map, activity_row)
+    activity_bk_color = cell_color(worksheet, curriculum_col_map, activity_logo_col_head, activity_row)
     if(activity_bk_color is not None):
-        next_activity_bk_color = cell_color(worksheet, curriculum_col_map, activity_row + 1)
+        next_activity_bk_color = cell_color(worksheet, curriculum_col_map, activity_logo_col_head, activity_row + 1)
         if activity_bk_color == next_activity_bk_color:
             is_parallel_with_next = True
     return is_parallel_with_next
@@ -250,9 +270,9 @@ def forge_grid(worksheet, zero_symbol_offset):
         is_with_next = activity_is_parallel_with_next(worksheet, curriculum_col_map, current_row)
         if activity is not None:
             qualifier, logo, activity_type = get_qualifier_and_logo(ws, curriculum_col_map, current_row)
-            numid = get_numid(ws, curriculum_col_map, current_row, activity_type)
+            numid, numid_is_predef = get_numid(ws, curriculum_col_map, current_row, activity_type)
             display_numid = ascii_number_to_local(str(numid), zero_symbol_offset)
-            write_numid(display_numid, ws, curriculum_col_map, current_row)
+            write_numid(display_numid, numid_is_predef, ws, curriculum_col_map, current_row)
             is_mandatory = activity_type_is_mandatory(activity_type)
             #data-collection is done based on activity_id. so keep the displayed logo and the ascii numid
             activity_id = logo + '_' + str(numid)
