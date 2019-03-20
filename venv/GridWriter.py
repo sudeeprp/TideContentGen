@@ -28,7 +28,7 @@ def copytree_warn_ifexist(source, target):
     try:
         shutil.copytree(source, target)
     except FileExistsError:
-        print("** Warning: " + target + " already exists")
+        print("Info: " + target + " already exists")
 
 def copy_activity_folder(activities_dir, activity_folder, target_dir):
     copied_files = []

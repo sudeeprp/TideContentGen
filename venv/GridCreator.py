@@ -73,6 +73,7 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
     symbol_offset = get_zero_symbol_offset(ExcelParser.grab_config(w))
     chapter_activities = []
     for sheet_name in w.sheetnames:
+        print(sheet_name)
         html_chapter_name = chapter_id = sheet_name.upper()
         warn_on_improper_chapter_id(chapter_id)
         chapter_name = str(w[sheet_name]['A1'].value)
