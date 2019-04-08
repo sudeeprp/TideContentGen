@@ -19,6 +19,8 @@ def make_clean_content_folder(output_dir, excel_filename):
         try:
             os.makedirs(content_folder_name, exist_ok=True)
             break
+        except FileExistsError as fileExists:
+            pass
         except OSError as os_error:
             if os_error.errno != errno.EACCES:
                 raise

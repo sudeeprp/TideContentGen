@@ -8,4 +8,6 @@ def continue_copy(source, dest):
         must_continue = input("Stop?")
         if must_continue.lower() == 'y':
             raise
+    except shutil.SameFileError as se:
+        pass
 

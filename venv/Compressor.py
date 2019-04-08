@@ -28,7 +28,7 @@ def compress(path, filename, max_x, max_y, min_file_bytes, mindim):
     bigimage.close()
 
     compressed_bytes = os.path.getsize(filepath)
-    print(filepath + " compressed from " +
+    print(os.path.basename(filepath) + " compressed from " +
           str(file_bytes // 1024) + "KB to " + str(compressed_bytes // 1024) + "KB")
 
 def isPicture(fname):
