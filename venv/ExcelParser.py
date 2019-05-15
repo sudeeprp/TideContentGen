@@ -35,8 +35,7 @@ def map_headings(ws, heading_row=1, start_col='A'):
         col_ord += 1
         cur_column = chr(col_ord)
     if cur_column == 'Z':
-        print('ERROR: more columns than expected!\n')
-        return None
+        print('** Warning: more columns than expected!\n')
     return excel_col_map
 
 
