@@ -1,5 +1,6 @@
 import sys
-from openpyxl import load_workbook
+import os
+from openpyxl import load_workbook, Workbook
 from openpyxl.styles import PatternFill, Color
 from ExcelParser import map_headings, Sheet, cell_color
 
@@ -68,7 +69,10 @@ def migrate_sheet(newsheet, outputwb, migratedsheet_name):
             row+=1
 
 def collate_sheets(oldformat_excel, newformat_excel, output_excel):
-    outputwb = load_workbook(oldformat_excel, data_only=True)
+    if os.path.isfile(oldformat_excel):
+        outputwb = load_workbook(oldformat_excel, data_only=True)
+    else:
+        outputwb = Workbook()
     neww = load_workbook(newformat_excel, data_only=True)
     for sheetname in neww.sheetnames:
         migrate_sheet(Sheet(neww[sheetname]), outputwb, sheetname)
