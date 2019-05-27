@@ -54,10 +54,14 @@ def row_color(source_sheet, col_map, row):
         tint = phase_tint
     return rgb, tint
 
+def migrate_heading(source_sheet, destination_sheet):
+    destination_sheet.cell(1,1).value = source_sheet.cell(1,1).value
+
 def migrate_sheet(newsheet, outputwb, migratedsheet_name):
     col_map = map_headings(newsheet, heading_row=3)
     if NEWSHEET_NUMID in col_map:
         output_sheet = outputwb.create_sheet(migratedsheet_name)
+        migrate_heading(newsheet.wsheet, output_sheet)
         fill_row(output_sheet, 3, ['logo', 'numid'])
         row = 4
         while fill_row(output_sheet, row, migrate_row(newsheet, row, col_map)):
