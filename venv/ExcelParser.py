@@ -25,6 +25,9 @@ class Sheet:
         return cell_value
 
 
+def isNoneOrEmpty(entity):
+    return (entity is None) or (len(entity) == 0)
+
 def map_headings(ws, heading_row=1, start_scan='A'):
     excel_col_map = {}
     cur_column = start_scan
@@ -315,9 +318,13 @@ def pics_sounds_map(excel_file):
     excel_col_map = map_headings(ws, heading_row)
     pics_to_sounds = {}
 
+    current_row = 0
     try:
         for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
-            pics_to_sounds[ws[excel_col_map['picture'] + str(current_row)].strip()] = \
+            picture_name = ws[excel_col_map['picture'] + str(current_row)]
+            if isNoneOrEmpty(picture_name):
+                break
+            pics_to_sounds[picture_name.strip()] = \
                 ws[excel_col_map['sound'] + str(current_row)].strip()
     except AttributeError:
         print("Error at row " + str(current_row))
