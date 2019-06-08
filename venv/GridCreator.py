@@ -26,6 +26,8 @@ def make_clean_dir(output_dir):
         time.sleep(0.3)
     return output_dir
 
+def make_chapter_id(sheet_name):
+    return sheet_name.replace(' ', '_').replace(',', '_')
 
 def make_activity_characteristics(grid, sub_activities):
     activity_map = {}
@@ -74,7 +76,7 @@ def generate_grid(curriculum_excel, raw_material_dir, activities_dir, output_par
     chapter_activities = []
     for sheet_name in w.sheetnames:
         print(sheet_name)
-        html_chapter_name = chapter_id = sheet_name.upper()
+        html_chapter_name = chapter_id = make_chapter_id(sheet_name.upper())
         warn_on_improper_chapter_id(chapter_id)
         chapter_name = str(w[sheet_name]['A1'].value)
         if chapter_name is not None:

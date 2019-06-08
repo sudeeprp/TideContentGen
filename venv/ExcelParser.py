@@ -25,9 +25,12 @@ class Sheet:
         return cell_value
 
 
-def map_headings(ws, heading_row=1, start_col='A'):
+def isNoneOrEmpty(entity):
+    return (entity is None) or (len(entity) == 0)
+
+def map_headings(ws, heading_row=1, start_scan='A'):
     excel_col_map = {}
-    cur_column = start_col
+    cur_column = start_scan
     head_row = str(heading_row)
     col_ord = ord(cur_column)
     while ws[cur_column + head_row] is not None and ws[cur_column + head_row] != "" and cur_column != 'Z':
@@ -35,8 +38,7 @@ def map_headings(ws, heading_row=1, start_col='A'):
         col_ord += 1
         cur_column = chr(col_ord)
     if cur_column == 'Z':
-        print('ERROR: more columns than expected!\n')
-        return None
+        print('** Warning: more columns than expected!\n')
     return excel_col_map
 
 
@@ -199,7 +201,7 @@ def get_numid(ws, curriculum_col_map, current_row, logo):
     numid_color = None
     if activity_numid_col_head in curriculum_col_map:
         numid = ws[curriculum_col_map[activity_numid_col_head] + str(current_row)]
-        numid_color = cell_color(ws.wsheet, curriculum_col_map, activity_numid_col_head, current_row)
+        numid_color = cell_color_strID(ws.wsheet, curriculum_col_map, activity_numid_col_head, current_row)
         if numid is not None: predefined = True
     numid = compute_numid(str(ws.wsheet), logo, numid, numid_color)
     return numid, predefined
@@ -211,24 +213,32 @@ def write_numid(display_numid, numid_is_predef, ws, curriculum_col_map, current_
     if activity_numid_col_head in curriculum_col_map:
         ws.wsheet[curriculum_col_map[activity_numid_col_head] + str(current_row)].value = prefix + display_numid
 
-
 def cell_color(worksheet, curriculum_col_map, col_name, activity_row):
+    rgb = None
+    tint = None
     colors = styles.colors.COLOR_INDEX
     color = worksheet[curriculum_col_map[col_name] +
                                            str(activity_row)].fill.start_color
-    if color.index == '00000000' or color.index == 'FFFFFFFF':
-        color = None
-    elif isinstance(color.index, int) and colors[color.index] == '00FFFFFF':
-        color = None
-    else:
-        color = str(color.index) + " " + str(color.tint)
-    return color
+    if isinstance(color.index, str) and color.index != '00000000' and color.index != 'FFFFFFFF':
+        rgb = color.index
+        tint = color.tint
+    elif isinstance(color.index, int) and colors[color.index] != '00FFFFFF':
+        rgb = colors[color.index]
+        tint = color.tint
+    return rgb, tint
+
+def cell_color_strID(worksheet, curriculum_col_map, col_name, activity_row):
+    color_strID = None
+    rgb, tint = cell_color(worksheet, curriculum_col_map, col_name, activity_row)
+    if rgb is not None:
+        color_strID = str(rgb) + " " + str(tint)
+    return color_strID
 
 def activity_is_parallel_with_next(worksheet, curriculum_col_map, activity_row):
     is_parallel_with_next = False
-    activity_bk_color = cell_color(worksheet, curriculum_col_map, activity_logo_col_head, activity_row)
+    activity_bk_color = cell_color_strID(worksheet, curriculum_col_map, activity_logo_col_head, activity_row)
     if(activity_bk_color is not None):
-        next_activity_bk_color = cell_color(worksheet, curriculum_col_map, activity_logo_col_head, activity_row + 1)
+        next_activity_bk_color = cell_color_strID(worksheet, curriculum_col_map, activity_logo_col_head, activity_row + 1)
         if activity_bk_color == next_activity_bk_color:
             is_parallel_with_next = True
     return is_parallel_with_next
@@ -254,7 +264,7 @@ def ascii_number_to_local(ascii_numstr, zero_symbol_offset):
 
 def forge_grid(worksheet, zero_symbol_offset):
     ws = Sheet(worksheet)
-    curriculum_col_map = map_headings(ws, heading_row=head_row, start_col=start_col)
+    curriculum_col_map = map_headings(ws, heading_row=head_row, start_scan=start_col)
     if activity_logo_col_head not in curriculum_col_map:
         print('Ignoring ' + str(worksheet) + ': no logo-column found.')
         return None
@@ -308,9 +318,13 @@ def pics_sounds_map(excel_file):
     excel_col_map = map_headings(ws, heading_row)
     pics_to_sounds = {}
 
+    current_row = 0
     try:
         for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
-            pics_to_sounds[ws[excel_col_map['picture'] + str(current_row)].strip()] = \
+            picture_name = ws[excel_col_map['picture'] + str(current_row)]
+            if isNoneOrEmpty(picture_name):
+                break
+            pics_to_sounds[picture_name.strip()] = \
                 ws[excel_col_map['sound'] + str(current_row)].strip()
     except AttributeError:
         print("Error at row " + str(current_row))
