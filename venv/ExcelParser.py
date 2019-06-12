@@ -41,7 +41,7 @@ def map_headings(ws, heading_row=1, start_scan='A'):
         print('** Warning: more columns than expected!\n')
     return excel_col_map
 
-
+"""
 def scan_row_range(ws, col_name, excel_col_map, start_row, limit_row):
     row_range = {'start': start_row, 'end': start_row}
     name = ws[excel_col_map[col_name] + str(start_row)]
@@ -120,6 +120,27 @@ def forge_activities(excel_file):
     heading_row = 1
     activity_col_map = map_headings(ws, heading_row)
     return collect_activities(ws, activity_col_map, {'start': heading_row + 1, 'end': ws.wsheet.max_row})
+"""
+
+def pics_sounds_map(excel_file):
+    w = load_workbook(excel_file, data_only=True)
+    ws = Sheet(w[w.sheetnames[0]])
+    heading_row = 1
+    excel_col_map = map_headings(ws, heading_row)
+    pics_to_sounds = {}
+
+    current_row = 0
+    try:
+        for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
+            picture_name = ws[excel_col_map['picture'] + str(current_row)]
+            if isNoneOrEmpty(picture_name):
+                break
+            pics_to_sounds[picture_name.strip()] = \
+                ws[excel_col_map['sound'] + str(current_row)].strip()
+    except AttributeError:
+        print("Error at row " + str(current_row))
+        raise
+    return pics_to_sounds
 
 
 def all_attributes_ok(activity_attributes):
@@ -310,26 +331,6 @@ def forge_grid(worksheet, zero_symbol_offset):
         prev_activity = activity
     return grid
 
-
-def pics_sounds_map(excel_file):
-    w = load_workbook(excel_file, data_only=True)
-    ws = Sheet(w[w.sheetnames[0]])
-    heading_row = 1
-    excel_col_map = map_headings(ws, heading_row)
-    pics_to_sounds = {}
-
-    current_row = 0
-    try:
-        for current_row in range(heading_row + 1, ws.wsheet.max_row + 1):
-            picture_name = ws[excel_col_map['picture'] + str(current_row)]
-            if isNoneOrEmpty(picture_name):
-                break
-            pics_to_sounds[picture_name.strip()] = \
-                ws[excel_col_map['sound'] + str(current_row)].strip()
-    except AttributeError:
-        print("Error at row " + str(current_row))
-        raise
-    return pics_to_sounds
 
 def grab_config(workbook):
     config_dict = {}

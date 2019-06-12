@@ -112,7 +112,7 @@ class ActivityWriter:
                     if 'merge_above' in image_layout: continue
 
                 html_file.write('<td' + self.rowspan_html(rowspan) + '>\n')
-                if picture is not None:
+                if picture is not None and picture != '':
                     picture_id = file2id(picture, '.id')
                     audio_source, play_instruction = self.audio_source_and_play_instruction(raw_materials_dir, picture, picture_id)
                     if audio_source is not None:
