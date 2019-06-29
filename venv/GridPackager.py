@@ -10,7 +10,7 @@ def write_local_info(localinfo_dir, output_dir):
     continue_copy(os.path.join(localinfo_dir, "display names of subjects.json"), output_dir)
 
 def write_content_description(output_dir):
-    content_description = {"content_version": "10 subi",
+    content_description = {"content_version": "11 m",
                            "timestamp": str(datetime.now()),
                            "location": str(output_dir.split('\\')[1:])
                           }

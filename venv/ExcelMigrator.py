@@ -28,11 +28,18 @@ def removeLeadingUnderscore(numid):
         numid = numid[1:]
     return numid
 
+def remove_tab_number(logo):
+    if logo.startswith('tab'):
+        logo = 'tab'
+    return logo
+
 def makeLogo(chosenPhase, chosenType):
     logo = chosenType.lower()
     phase = chosenPhase.lower()
     if phase == 'enrichment' or phase == 'reinforcement':
         logo = logo + '-' + phase
+    elif phase == 'assessment':
+        logo = remove_tab_number(logo) + ' ' + phase
     return logo
 
 def migrate_row(sheet, row, col_map):

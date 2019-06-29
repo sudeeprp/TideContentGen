@@ -2,6 +2,7 @@ import GridHTMLPieces
 import ChapterSelectorPieces
 import SetOfSubPieces
 import shutil
+import sys
 import os
 import json
 from urllib.parse import quote
@@ -26,7 +27,7 @@ def copy_files(images_to_copy, from_dir, to_dir):
 
 def copytree_warn_ifexist(source, target):
     try:
-        shutil.copytree(source, target)
+        shutil.copytree(source.encode(sys.getfilesystemencoding()), target.encode(sys.getfilesystemencoding()))
     except FileExistsError:
         print("Info: " + target + " already exists")
 
